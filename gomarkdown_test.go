@@ -55,7 +55,7 @@ func Test(t *testing.T) {
 
 `
 
-	test += "`code`\n"
+	test += "`code`and`code`\n"
 	test += "```\n"
 	test += "go run main.go\n"
 	test += "```\n"
