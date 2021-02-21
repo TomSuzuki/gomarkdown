@@ -72,9 +72,9 @@ func MarkdownToHTML(markdown string) string {
 func parserCode(line string, isCode bool) (string, bool) {
 	if len(line) >= 3 && line[:3] == "```" {
 		if isCode {
-			line = "</pre></code>"
+			line = "</code></pre>"
 		} else {
-			line = "<code><pre>"
+			line = "<pre><code>"
 		}
 		isCode = isCode == false
 	}
