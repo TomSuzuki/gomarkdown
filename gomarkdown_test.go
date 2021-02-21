@@ -22,13 +22,13 @@ func Test(t *testing.T) {
 ### Header 3
 ---
 <br>  
-**Bold****Bold**
+**Bold**
 
 - item
 - item
 - item
 - **Bold**
-- **bold***italic*
+- **bold** *em*
 
 - 11
   - 22
@@ -48,6 +48,10 @@ func Test(t *testing.T) {
 日本語
 
 - 日本語
+
+![text](/path/a.jpg)
+
+[text](link)
 
 `
 
