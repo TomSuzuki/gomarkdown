@@ -1,5 +1,5 @@
 # gomarkdown
-markdown purser for golang
+markdown parser for golang
 
 ## how to use test
 ```
