@@ -15,6 +15,11 @@ import (
 	"strings"
 )
 
+type regList struct {
+	reg  string
+	html string
+}
+
 // MarkdownToHTML ...import markdown text, it will return HTML text
 func MarkdownToHTML(markdown string) string {
 	var html string
@@ -23,21 +28,35 @@ func MarkdownToHTML(markdown string) string {
 	var nestlist []string
 	isCode := false
 
+	regList := []regList{
+		{`\*\*(.*)\*\*`, "<b>$1</b>"},
+		{`!\[(.*)\]\((.*)\)`, "<img alt='$1' src='$2'>"},
+		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
+		{`\*(.*)\*|_(.*)_|__(.*)__`, "<em>$1</em>"},
+		{`^#\s([^#]*?$)`, "<h1>$1</h1>"},
+		{`^##\s([^#]*?$)`, "<h2>$1</h2>"},
+		{`^###\s([^#]*?$)`, "<h3>$1</h3>"},
+		{`^####\s([^#]*?$)`, "<h4>$1</h4>"},
+		{`^#####\s([^#]*?$)`, "<h5>$1</h5>"},
+		{`^######\s([^#]*?$)`, "<h6>$1</h6>"},
+		{`^>\s(.*$)`, "<blockquote>$1</blockquote>"},
+		{`\s\s$`, "<br>"},
+		{"`(.*)`", "<code>$1</code>"},
+		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>"},
+		{`~(.*)~`, "<s>$1</s>"},
+	}
+
 	for i := range lines {
 		line := lines[i]
 
 		line, isCode = parserCode(line, isCode)
 		if !isCode {
 			line, nestlist = parserList(line, nestlist)
-			line = parserHeader(line)
-			line = parser(line, "**", "b")
-			line = parser(line, "__", "b")
-			line = parser(line, "*", "em")
-			line = parser(line, "_", "em")
-			line = parser(line, "~", "s")
-			line = parser(line, "`", "code")
-			line = parser(line, "  ", "br")
-			line = parserHr(line)
+
+			for i := range regList {
+				re := regexp.MustCompile(regList[i].reg)
+				line = re.ReplaceAllString(line, regList[i].html)
+			}
 		}
 
 		html += line
@@ -62,12 +81,6 @@ func parserCode(line string, isCode bool) (string, bool) {
 	return line, isCode
 }
 
-// CleanHTML ...
-func CleanHTML(html string) string {
-	re := regexp.MustCompile(`</([^>]+?)>`)
-	return re.ReplaceAllString(html, "</$1>\n")
-}
-
 // parserList ...
 func parserList(line string, nestlist []string) (string, []string) {
 	text := ""
@@ -82,7 +95,7 @@ func parserList(line string, nestlist []string) (string, []string) {
 	if strings.Index(strings.Trim(line, " "), "1. ") == 0 {
 		apd = "ol"
 		nest = 1 + strings.Index(line, "1. ")/2
-		line = line[strings.Index(line, "1. ")+2:]
+		line = line[strings.Index(line, "1. ")+3:]
 	}
 	// open
 	for nest > len(nestlist) {
