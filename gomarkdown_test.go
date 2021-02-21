@@ -20,18 +20,41 @@ func Test(t *testing.T) {
 	test := `
 # Header 1
 ### Header 3
---
+---
 <br>  
 **Bold****Bold**
 
 - item
 - item
 - item
+- **Bold**
+- **bold***italic*
+
+- 11
+  - 22
+  - 22
+    - 33
+    - 33
+  1. aa
+  1. aa
+    - 33
+    - 33
+
 
 1. aaa
 1. bbb
 1. ccc
+
+日本語
+
+- 日本語
+
 `
+
+	test += "`code`\n"
+	test += "```\n"
+	test += "go run main.go\n"
+	test += "```\n"
 
 	t.Log(gomarkdown.MarkdownToHTML(test))
 }
