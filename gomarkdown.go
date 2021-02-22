@@ -11,6 +11,7 @@ package gomarkdown
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -26,8 +27,10 @@ func MarkdownToHTML(markdown string) string {
 	// init
 	var html string
 	var nestlist []string
+	var tableinfo []string
 	var isParagraph = false
 	var isCode = false
+	var isTable = false
 	regs := listRegInfo()
 
 	// markdown -> line
@@ -38,6 +41,7 @@ func MarkdownToHTML(markdown string) string {
 	for i := range lines {
 		line := lines[i]
 		inParagraph := true
+		inTable := false
 
 		// code line?
 		line, isCode = parserCode(line, isCode)
@@ -57,8 +61,29 @@ func MarkdownToHTML(markdown string) string {
 					inParagraph = false
 				}
 			}
+
+			// table
+			line, tableinfo = parserTable(line, tableinfo)
+			if tableinfo != nil {
+				inParagraph = false
+			}
+			if tableinfo == nil {
+				inTable = false
+			} else if !isTable {
+				inTable = true
+				isTable = true
+				line = "<table>" + line
+			} else {
+				inTable = true
+			}
 		} else {
 			inParagraph = false
+		}
+
+		// table
+		if isTable && !inTable {
+			isTable = false
+			line = "</table>" + line
 		}
 
 		// p
@@ -81,12 +106,65 @@ func MarkdownToHTML(markdown string) string {
 	s, _ := parserList("", nestlist)
 	html += s
 
+	// </table>
+	if isTable {
+		html += "</table>"
+	}
+
 	// </p>
 	if isParagraph {
 		html += "</p>"
 	}
 
 	return html
+}
+
+// parserTable ...
+func parserTable(line string, tableinfo []string) (string, []string) {
+	if strings.Count(line, "|") > 1 {
+		if tableinfo == nil { //th
+			tableinfo = make([]string, strings.Count(line, "|")-1)
+			var reg = `\|`
+			var htm = ""
+			for i := range tableinfo {
+				reg += `([^|]*)\|`
+				htm += "<th align='center'>$" + strconv.Itoa(i+1) + "</th>"
+			}
+			reg += `$`
+			line = "<tr>" + regexp.MustCompile(reg).ReplaceAllString(line, htm) + "</tr>"
+		} else { // td
+			if tableinfo[0] == "" { // align
+				s := strings.Split(line, "|")
+				s = s[1 : len(s)-1]
+				if len(s) != len(tableinfo) {
+					return line, tableinfo
+				}
+				for i := range s {
+					s[i] = strings.Trim(s[i], " ")
+					if string(s[i][0]) == ":" && string(s[i][len(s[i])-1]) != ":" {
+						tableinfo[i] = "left"
+					} else if string(s[i][0]) != ":" && string(s[i][len(s[i])-1]) == ":" {
+						tableinfo[i] = "right"
+					} else {
+						tableinfo[i] = "center"
+					}
+				}
+				line = ""
+			} else { // td
+				var reg = `\|`
+				var htm = ""
+				for i := range tableinfo {
+					reg += `([^|]*)\|`
+					htm += "<td align='" + tableinfo[i] + "'>$" + strconv.Itoa(i+1) + "</td>"
+				}
+				reg += `$`
+				line = "<tr>" + regexp.MustCompile(reg).ReplaceAllString(line, htm) + "</tr>"
+			}
+		}
+	} else {
+		tableinfo = nil
+	}
+	return line, tableinfo
 }
 
 // listRegInfo ...replacement data
