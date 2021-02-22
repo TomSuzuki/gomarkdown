@@ -35,40 +35,44 @@ func Test(t *testing.T) {
 	for _, file := range files {
 		if !file.IsDir() && filepath.Ext(file.Name()) == ".md" {
 			testfile = append(testfile, testFile{
-				markdown: file.Name(),
-				html:     file.Name() + ".html",
+				markdown: dir + file.Name(),
+				html:     dir + file.Name() + ".html",
 			})
 		}
 	}
 
 	// test
 	for i := range testfile {
-		test := testfile[i]
+		test(testfile[i], t)
+	}
+}
 
-		// load
-		b, _ := ioutil.ReadFile(dir + test.html)
-		sample := string(b)
-		b, _ = ioutil.ReadFile(dir + test.markdown)
-		answer := string(b)
+func test(test testFile, t *testing.T) {
+	// load
+	b, _ := ioutil.ReadFile(test.html)
+	sample := string(b)
+	b, _ = ioutil.ReadFile(test.markdown)
+	answer := string(b)
 
-		// html -> markdown
-		answer = gomarkdown.MarkdownToHTML(answer)
+	// html -> markdown
+	answer = gomarkdown.MarkdownToHTML(answer)
 
-		// trim
-		sample = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "").Replace(sample)
-		answer = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "").Replace(answer)
+	// trim
+	sample = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "", "'", "\"").Replace(sample)
+	answer = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "", "'", "\"").Replace(answer)
 
-		// html
-		sampleHTML := template.HTML(sample)
-		answerHTML := template.HTML(answer)
+	// html
+	sampleHTML := template.HTML(sample)
+	answerHTML := template.HTML(answer)
 
-		// check
-		if sampleHTML != answerHTML {
-			t.Logf("sample: %s", sampleHTML)
-			t.Logf("answer: %s", answerHTML)
-			t.Fatalf("failed test: %s", dir+test.markdown)
-		} else {
-			t.Logf("☑ success test: %s", test.markdown)
-		}
+	// check
+	if sampleHTML != answerHTML {
+		t.Logf("☒  failed test: \t%s", test.markdown)
+		t.Logf(" - sample: %s", sampleHTML)
+		t.Logf(" - answer: %s", answerHTML)
+		t.Logf("")
+		t.Fail()
+	} else {
+		t.Logf("☑  success test: \t%s", test.markdown)
 	}
 }
