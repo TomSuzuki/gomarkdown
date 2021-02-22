@@ -16,8 +16,9 @@ import (
 
 // Regular expression information ...Regular expression information
 type regList struct {
-	reg  string
-	html string
+	reg         string
+	html        string
+	inParagraph bool
 }
 
 // MarkdownToHTML ...import markdown text, it will return HTML text
@@ -25,7 +26,8 @@ func MarkdownToHTML(markdown string) string {
 	// init
 	var html string
 	var nestlist []string
-	isCode := false
+	var isParagraph = false
+	var isCode = false
 	regs := listRegInfo()
 
 	// markdown -> line
@@ -35,16 +37,40 @@ func MarkdownToHTML(markdown string) string {
 	// lines -> line
 	for i := range lines {
 		line := lines[i]
+		inParagraph := true
+
 		// code line?
 		line, isCode = parserCode(line, isCode)
 		if !isCode {
 			// list
+			n := len(nestlist)
 			line, nestlist = parserList(line, nestlist)
+			if len(nestlist) > 0 || n != 0 {
+				inParagraph = false
+			}
 
 			// reg replace
 			for i := range regs {
+				aline := line
 				line = regexp.MustCompile(regs[i].reg).ReplaceAllString(line, regs[i].html)
+				if aline != line && !regs[i].inParagraph {
+					inParagraph = false
+				}
 			}
+		} else {
+			inParagraph = false
+		}
+
+		// p
+		if strings.Trim(line, " ") == "" {
+			inParagraph = false
+		}
+		if inParagraph && !isParagraph {
+			isParagraph = true
+			line = "<p>" + line
+		} else if isParagraph && !inParagraph {
+			isParagraph = false
+			line = "</p>" + line
 		}
 
 		// add
@@ -55,27 +81,32 @@ func MarkdownToHTML(markdown string) string {
 	s, _ := parserList("", nestlist)
 	html += s
 
+	// </p>
+	if isParagraph {
+		html += "</p>"
+	}
+
 	return html
 }
 
 // listRegInfo ...replacement data
 func listRegInfo() []regList {
 	return []regList{
-		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>"},
-		{`!\[(.*)\]\((.*)\)`, "<img alt='$1' src='$2'>"},
-		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
-		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>"},
-		{`^#\s([^#]*?$)`, "<h1>$1</h1>"},
-		{`^##\s([^#]*?$)`, "<h2>$1</h2>"},
-		{`^###\s([^#]*?$)`, "<h3>$1</h3>"},
-		{`^####\s([^#]*?$)`, "<h4>$1</h4>"},
-		{`^#####\s([^#]*?$)`, "<h5>$1</h5>"},
-		{`^######\s([^#]*?$)`, "<h6>$1</h6>"},
-		{`^>\s(.*$)`, "<blockquote><p>$1</p></blockquote>"},
-		{`\s\s$`, "<br>"},
-		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>"},
-		{"~([^~]*)~", "<s>$1</s>"},
-		{"`([^`]*)`", "<code>$1</code>"},
+		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>", true},
+		{`!\[(.*)\]\((.*)\)`, "<img alt='$1' src='$2'>", true},
+		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>", true},
+		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>", true},
+		{`^#\s([^#]*?$)`, "<h1>$1</h1>", false},
+		{`^##\s([^#]*?$)`, "<h2>$1</h2>", false},
+		{`^###\s([^#]*?$)`, "<h3>$1</h3>", false},
+		{`^####\s([^#]*?$)`, "<h4>$1</h4>", false},
+		{`^#####\s([^#]*?$)`, "<h5>$1</h5>", false},
+		{`^######\s([^#]*?$)`, "<h6>$1</h6>", false},
+		{`^>\s(.*$)`, "<blockquote><p>$1</p></blockquote>", false},
+		{`\s\s$`, "<br>", true},
+		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>", false},
+		{"~([^~]*)~", "<s>$1</s>", true},
+		{"`([^`]*)`", "<code>$1</code>", true},
 	}
 }
 
