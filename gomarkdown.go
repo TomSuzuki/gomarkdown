@@ -12,6 +12,7 @@ package gomarkdown
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -32,6 +33,8 @@ func MarkdownToHTML(markdown string) string {
 			convData.lineType = typeCode
 		} else if (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. " {
 			convData.lineType = typeList
+		} else if (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1 {
+			convData.lineType = typeTable
 		} else if strings.Trim(line, " ") == "" {
 			convData.lineType = typeNone
 		} else {
@@ -42,12 +45,13 @@ func MarkdownToHTML(markdown string) string {
 		typeChenged := convData.lineType != oldType
 		if typeChenged {
 			switch oldType {
+			case typeTable:
+				convData.markdownLines[0] = fmt.Sprintf("</table>%s", convData.markdownLines[0])
 			case typeCode:
 				if convData.lineType == typeCodeMarker {
 					convData.markdownLines[0] = "</code></pre>"
 					convData.lineType = typeNone
 				}
-			case typeCodeMarker:
 			case typeList:
 				var text = ""
 				for i := len(convData.listNest) - 1; i >= 0; i-- {
@@ -57,13 +61,14 @@ func MarkdownToHTML(markdown string) string {
 				convData.listNest = nil
 			case typeParagraph:
 				convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
-			default:
 			}
 		}
 
 		// markdown -> html
 		switch convData.lineType {
-		case typeCode:
+		case typeTable:
+			convData = tableConv(convData)
+			convData, _ = inlineConv(convData)
 		case typeCodeMarker:
 			if oldType != typeCode {
 				convData.markdownLines[0] = "<pre><code>"
@@ -82,7 +87,6 @@ func MarkdownToHTML(markdown string) string {
 			} else if inline && typeChenged {
 				convData.markdownLines[0] = fmt.Sprintf("<p>%s", convData.markdownLines[0])
 			}
-		default:
 		}
 
 		// add
@@ -98,7 +102,56 @@ func MarkdownToHTML(markdown string) string {
 	return convData.html
 }
 
-//
+// tableConv ...
+func tableConv(convData convertedData) convertedData {
+	var tag = "td"
+	var text = ""
+
+	// align
+	if convData.tableAlign == nil {
+		tag = "th"
+		text = "<table>"
+		if len(convData.markdownLines) == 1 {
+			return convData
+		}
+		alignLine := strings.Split(convData.markdownLines[1], "|")
+		if len(alignLine) < 2 {
+			return convData
+		}
+		if len(convData.markdownLines) > 2 {
+			convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
+		} else {
+			convData.markdownLines = []string{convData.markdownLines[0]}
+		}
+		alignLine = alignLine[1 : len(alignLine)-1]
+		for i := range alignLine {
+			colonR := string(alignLine[i][len(alignLine[i])-1]) == ":"
+			colonL := string(alignLine[i][0]) == ":"
+			if colonR && !colonL {
+				convData.tableAlign = append(convData.tableAlign, "right")
+			} else if !colonR && colonL {
+				convData.tableAlign = append(convData.tableAlign, "left")
+			} else {
+				convData.tableAlign = append(convData.tableAlign, "center")
+			}
+		}
+	}
+
+	// <tr>
+	var reg = `\|`
+	var htm = ""
+	for i := range convData.tableAlign {
+		reg += `([^|]*)\|`
+		htm += fmt.Sprintf("<%s align='%s'>$%s</%s>", tag, convData.tableAlign[i], strconv.Itoa(i+1), tag)
+	}
+	reg += `$`
+	text += "<tr>" + regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm) + "</tr>"
+	convData.markdownLines[0] = text
+
+	return convData
+}
+
+// inlineConv ...
 func inlineConv(convData convertedData) (convertedData, bool) {
 	var inline = true
 	var regexpInfo = listRegInfo()
@@ -115,7 +168,7 @@ func inlineConv(convData convertedData) (convertedData, bool) {
 	return convData, inline
 }
 
-//
+// listConv ...
 func listConv(convData convertedData) convertedData {
 	var line = convData.markdownLines[0]
 	var text = ""
