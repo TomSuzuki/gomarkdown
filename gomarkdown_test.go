@@ -11,55 +11,64 @@
 package gomarkdown_test
 
 import (
+	"html/template"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/TomSuzuki/gomarkdown"
 )
 
+type testFile struct {
+	markdown string
+	html     string
+}
+
 func Test(t *testing.T) {
-	test := `
-# Header 1
-### Header 3
----
-<br>  
-**Bold**
+	// test case (markdown, html)
+	dir := "./testcase/"
+	var testfile []testFile
 
-- item
-- item
-- item
-- **Bold**
-- **bold** *em*
+	// get list
+	files, _ := ioutil.ReadDir("./testcase/")
+	for _, file := range files {
+		if !file.IsDir() && filepath.Ext(file.Name()) == ".md" {
+			testfile = append(testfile, testFile{
+				markdown: file.Name(),
+				html:     file.Name() + ".html",
+			})
+		}
+	}
 
-- 11
-  - 22
-  - 22
-    1. 33
-    1. 33
-  - aa
-  - aa
-    - 33
-    - 33
-- 00
-- 00
+	// test
+	for i := range testfile {
+		test := testfile[i]
 
-1. aaa
-1. bbb
-1. ccc
+		// load
+		b, _ := ioutil.ReadFile(dir + test.html)
+		sample := string(b)
+		b, _ = ioutil.ReadFile(dir + test.markdown)
+		answer := string(b)
 
-日本語
+		// html -> markdown
+		answer = gomarkdown.MarkdownToHTML(answer)
 
-- 日本語
+		// trim
+		sample = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "").Replace(sample)
+		answer = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", " ", "").Replace(answer)
 
-![text](/path/a.jpg)
+		// html
+		sampleHTML := template.HTML(sample)
+		answerHTML := template.HTML(answer)
 
-[text](link)
-
-`
-
-	test += "`code`and`code`\n"
-	test += "```\n"
-	test += "go run main.go\n"
-	test += "```\n"
-
-	t.Log(gomarkdown.MarkdownToHTML(test))
+		// check
+		if sampleHTML != answerHTML {
+			t.Logf("sample: %s", sampleHTML)
+			t.Logf("answer: %s", answerHTML)
+			t.Fatalf("failed test: %s", dir+test.markdown)
+		} else {
+			t.Logf("☑ success test: %s", test.markdown)
+		}
+	}
 }
