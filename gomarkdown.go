@@ -61,7 +61,7 @@ func MarkdownToHTML(markdown string) string {
 // listRegInfo ...replacement data
 func listRegInfo() []regList {
 	return []regList{
-		{`\*\*([^\*]*)\*\*`, "<b>$1</b>"},
+		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>"},
 		{`!\[(.*)\]\((.*)\)`, "<img alt='$1' src='$2'>"},
 		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
 		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>"},
@@ -71,7 +71,7 @@ func listRegInfo() []regList {
 		{`^####\s([^#]*?$)`, "<h4>$1</h4>"},
 		{`^#####\s([^#]*?$)`, "<h5>$1</h5>"},
 		{`^######\s([^#]*?$)`, "<h6>$1</h6>"},
-		{`^>\s(.*$)`, "<blockquote>$1</blockquote>"},
+		{`^>\s(.*$)`, "<blockquote><p>$1</p></blockquote>"},
 		{`\s\s$`, "<br>"},
 		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>"},
 		{"~([^~]*)~", "<s>$1</s>"},
