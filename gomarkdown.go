@@ -16,6 +16,53 @@ import (
 	"strings"
 )
 
+// type of line
+const (
+	typeNone       = iota
+	typeParagraph  = iota
+	typeList       = iota
+	typeCode       = iota
+	typeCodeMarker = iota
+	typeTable      = iota
+)
+
+// all data
+type convertedData struct {
+	markdownLines []string
+	html          string
+	lineType      int
+	tableAlign    []string
+	listNest      []string
+}
+
+// regular expression information
+type regList struct {
+	regexp   string
+	html     string
+	isInline bool
+}
+
+// regular expression information list
+func listRegInfo() []regList {
+	return []regList{
+		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>", true},
+		{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>", true},
+		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>", true},
+		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>", true},
+		{`^#\s([^#]*?$)`, "<h1>$1</h1>", false},
+		{`^##\s([^#]*?$)`, "<h2>$1</h2>", false},
+		{`^###\s([^#]*?$)`, "<h3>$1</h3>", false},
+		{`^####\s([^#]*?$)`, "<h4>$1</h4>", false},
+		{`^#####\s([^#]*?$)`, "<h5>$1</h5>", false},
+		{`^######\s([^#]*?$)`, "<h6>$1</h6>", false},
+		{`^>\s(.*$)`, "<blockquote><p>$1</p></blockquote>", false},
+		{`\s\s$`, "<br>", true},
+		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>", false},
+		{"~([^~]*)~", "<s>$1</s>", true},
+		{"`([^`]*)`", "<code>$1</code>", true},
+	}
+}
+
 // MarkdownToHTML ...import markdown text, it will return HTML text
 func MarkdownToHTML(markdown string) string {
 	var convData convertedData
@@ -102,7 +149,7 @@ func MarkdownToHTML(markdown string) string {
 	return convData.html
 }
 
-// tableConv ...
+// tableConv ...table generation
 func tableConv(convData convertedData) convertedData {
 	var tag = "td"
 	var text = ""
@@ -151,7 +198,7 @@ func tableConv(convData convertedData) convertedData {
 	return convData
 }
 
-// inlineConv ...
+// inlineConv ...replacement in line (regular expressions)
 func inlineConv(convData convertedData) (convertedData, bool) {
 	var inline = true
 	var regexpInfo = listRegInfo()
@@ -168,7 +215,7 @@ func inlineConv(convData convertedData) (convertedData, bool) {
 	return convData, inline
 }
 
-// listConv ...
+// listConv ...list generation
 func listConv(convData convertedData) convertedData {
 	var line = convData.markdownLines[0]
 	var text = ""
@@ -221,47 +268,4 @@ func listConv(convData convertedData) convertedData {
 	convData.markdownLines[0] = text
 
 	return convData
-}
-
-const (
-	typeNone       = iota
-	typeParagraph  = iota
-	typeList       = iota
-	typeCode       = iota
-	typeCodeMarker = iota
-	typeTable      = iota
-)
-
-type convertedData struct {
-	markdownLines []string
-	html          string
-	lineType      int
-	tableAlign    []string
-	listNest      []string
-}
-
-type regList struct {
-	regexp   string
-	html     string
-	isInline bool
-}
-
-func listRegInfo() []regList {
-	return []regList{
-		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>", true},
-		{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>", true},
-		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>", true},
-		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>", true},
-		{`^#\s([^#]*?$)`, "<h1>$1</h1>", false},
-		{`^##\s([^#]*?$)`, "<h2>$1</h2>", false},
-		{`^###\s([^#]*?$)`, "<h3>$1</h3>", false},
-		{`^####\s([^#]*?$)`, "<h4>$1</h4>", false},
-		{`^#####\s([^#]*?$)`, "<h5>$1</h5>", false},
-		{`^######\s([^#]*?$)`, "<h6>$1</h6>", false},
-		{`^>\s(.*$)`, "<blockquote><p>$1</p></blockquote>", false},
-		{`\s\s$`, "<br>", true},
-		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>", false},
-		{"~([^~]*)~", "<s>$1</s>", true},
-		{"`([^`]*)`", "<code>$1</code>", true},
-	}
 }
