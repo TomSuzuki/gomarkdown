@@ -5,3 +5,7 @@ markdown parser for golang
 ```
 go test -v
 ```
+or
+```
+gotest -v
+```
