@@ -97,6 +97,8 @@ func parserList(line string, nestlist []string) (string, []string) {
 	// init
 	var text string
 	var apd string
+	var isOpen = false
+	var isClose = false
 	var info = []struct {
 		html     string
 		markdown string
@@ -120,11 +122,12 @@ func parserList(line string, nestlist []string) (string, []string) {
 	for nest > len(nestlist) {
 		nestlist = append(nestlist, apd)
 		text += "<" + apd + ">"
+		isOpen = true
 	}
 
 	// li
 	if apd != "" {
-		text += "<li>" + line + "</li>"
+		text += "<li>" + line
 	} else {
 		text += line
 	}
@@ -135,9 +138,20 @@ func parserList(line string, nestlist []string) (string, []string) {
 	}
 
 	// close list
+	var close string
 	for nest < len(nestlist) {
-		text = ("</" + nestlist[len(nestlist)-1] + ">" + text)
+		isClose = true
+		close += ("</li></" + nestlist[len(nestlist)-1] + ">")
 		nestlist = nestlist[:len(nestlist)-1]
+	}
+	if len(nestlist) > 0 && isClose {
+		text = "</li>" + text
+	}
+	text = close + text
+
+	// close li
+	if len(nestlist) > 0 && !isOpen && !isClose {
+		text = "</li>" + text
 	}
 
 	return text, nestlist
