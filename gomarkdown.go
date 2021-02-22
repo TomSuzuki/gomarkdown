@@ -44,6 +44,9 @@ func MarkdownToHTML(markdown string) string {
 		inTable := false
 
 		// code line?
+		if isCode {
+			inParagraph = false
+		}
 		line, isCode = parserCode(line, isCode)
 		if !isCode {
 			// list
