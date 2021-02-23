@@ -8,34 +8,26 @@ import (
 // listConv ...list generation
 func (convData *convertedData) listConv() {
 	var line = convData.markdownLines[0]
-	var text = ""
+	var openTags = ""
 	var nest = 0
 	var oldNest = len(convData.listNest)
-	var info = []struct {
-		html     string
-		markdown string
-	}{
-		{"ul", "- "},
-		{"ol", "1. "},
-	}
 
 	// list type and open list
-	for i := range info {
-		if strings.Index(strings.Trim(line, " "), info[i].markdown) == 0 {
-			tag := info[i].html
-			nest = 1 + strings.Index(line, info[i].markdown)/2
-			line = line[strings.Index(line, info[i].markdown)+len(info[i].markdown):]
+	for tag, md := range map[string]string{"ul": "- ", "ol": "1. "} {
+		if strings.Index(strings.Trim(line, " "), md) == 0 {
+			nest = 1 + strings.Index(line, md)/2
+			line = line[strings.Index(line, md)+len(md):]
 
 			// open <ul> or <ol>
 			for nest > len(convData.listNest) {
 				convData.listNest = append(convData.listNest, tag)
-				text = fmt.Sprintf("<%s>", tag)
+				openTags = fmt.Sprintf("<%s>", tag)
 			}
 		}
 	}
 
 	// open <li>
-	convData.markdownLines[0] = fmt.Sprintf("%s<li>%s", text, line)
+	convData.markdownLines[0] = fmt.Sprintf("%s<li>%s", openTags, line)
 
 	// close
 	convData.listTagClose(nest, oldNest, true)
