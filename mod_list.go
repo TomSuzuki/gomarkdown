@@ -9,7 +9,6 @@ import (
 func (convData *convertedData) listConv() {
 	var line = convData.markdownLines[0]
 	var text = ""
-	var tag = ""
 	var nest = 0
 	var oldNest = len(convData.listNest)
 	var info = []struct {
@@ -20,19 +19,19 @@ func (convData *convertedData) listConv() {
 		{"ol", "1. "},
 	}
 
-	// list type
+	// list type and open list
 	for i := range info {
 		if strings.Index(strings.Trim(line, " "), info[i].markdown) == 0 {
-			tag = info[i].html
+			tag := info[i].html
 			nest = 1 + strings.Index(line, info[i].markdown)/2
 			line = line[strings.Index(line, info[i].markdown)+len(info[i].markdown):]
-		}
-	}
 
-	// open <ul> or <ol>
-	for nest > len(convData.listNest) {
-		convData.listNest = append(convData.listNest, tag)
-		text = fmt.Sprintf("<%s>", tag)
+			// open <ul> or <ol>
+			for nest > len(convData.listNest) {
+				convData.listNest = append(convData.listNest, tag)
+				text = fmt.Sprintf("<%s>", tag)
+			}
+		}
 	}
 
 	// open <li>
@@ -53,6 +52,7 @@ func (convData *convertedData) listClose() {
 // listTagClose
 func (convData *convertedData) listTagClose(nest int, oldNest int, inlist bool) {
 	var tags = ""
+	var tagl = "" // Add </li> that could not be added to the list when the nesting is finished.
 
 	// close
 	for nest < len(convData.listNest) {
@@ -60,19 +60,15 @@ func (convData *convertedData) listTagClose(nest int, oldNest int, inlist bool) 
 		convData.listNest = convData.listNest[:len(convData.listNest)-1]
 	}
 
-	//
-	if nest < oldNest && nest != 0 {
-		tags = tags + "</li>"
+	// </li>
+	if nest <= oldNest && nest != 0 {
+		tagl = "</li>"
 	}
 
 	// append
 	if !inlist || oldNest > nest {
-		convData.markdownLines[0] = fmt.Sprintf("%s%s", tags, convData.markdownLines[0])
+		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tags, tagl, convData.markdownLines[0])
 	} else {
-		convData.markdownLines[0] = fmt.Sprintf("%s%s", convData.markdownLines[0], tags)
-		if oldNest >= nest && len(convData.listNest) > 0 {
-			convData.markdownLines[0] = fmt.Sprintf("</li>%s", convData.markdownLines[0])
-		}
+		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tagl, convData.markdownLines[0], tags)
 	}
-
 }
