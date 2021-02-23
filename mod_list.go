@@ -36,26 +36,10 @@ func (convData *convertedData) listConv() {
 	}
 
 	// open <li>
-	text = fmt.Sprintf("%s<li>%s", text, line)
+	convData.markdownLines[0] = fmt.Sprintf("%s<li>%s", text, line)
 
-	// close </ul> or </ol>
-	var closeTags = ""
-	for nest < len(convData.listNest) {
-		closeTags = fmt.Sprintf("</%s>%s", convData.listNest[len(convData.listNest)-1], closeTags)
-		if len(convData.listNest) > 0 {
-			closeTags = fmt.Sprintf("%s</li>", closeTags)
-		}
-		convData.listNest = convData.listNest[:len(convData.listNest)-1]
-	}
-	text = fmt.Sprintf("%s%s", closeTags, text)
-
-	// close </li>
-	if oldNest >= nest {
-		text = fmt.Sprintf("</li>%s", text)
-	}
-
-	// data
-	convData.markdownLines[0] = text
+	// close
+	convData.listTagClose(nest, oldNest, true)
 
 	// inline
 	convData.inlineConv()
@@ -63,10 +47,32 @@ func (convData *convertedData) listConv() {
 
 // listClose ...close list
 func (convData *convertedData) listClose() {
-	var text = ""
-	for i := len(convData.listNest) - 1; i >= 0; i-- {
-		text = fmt.Sprintf("%s</li></%s>", text, convData.listNest[i])
+	convData.listTagClose(0, len(convData.listNest), false)
+}
+
+// listTagClose
+func (convData *convertedData) listTagClose(nest int, oldNest int, inlist bool) {
+	var tags = ""
+
+	// close
+	for nest < len(convData.listNest) {
+		tags = fmt.Sprintf("%s</li></%s>", tags, convData.listNest[len(convData.listNest)-1])
+		convData.listNest = convData.listNest[:len(convData.listNest)-1]
 	}
-	convData.markdownLines[0] = fmt.Sprintf("%s%s", text, convData.markdownLines[0])
-	convData.listNest = nil
+
+	//
+	if nest < oldNest && nest != 0 {
+		tags = tags + "</li>"
+	}
+
+	// append
+	if !inlist || oldNest > nest {
+		convData.markdownLines[0] = fmt.Sprintf("%s%s", tags, convData.markdownLines[0])
+	} else {
+		convData.markdownLines[0] = fmt.Sprintf("%s%s", convData.markdownLines[0], tags)
+		if oldNest >= nest && len(convData.listNest) > 0 {
+			convData.markdownLines[0] = fmt.Sprintf("</li>%s", convData.markdownLines[0])
+		}
+	}
+
 }
