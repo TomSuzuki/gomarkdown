@@ -20,38 +20,27 @@ func (convData *convertedData) tableConv() {
 			return
 		}
 		alignLine := strings.Split(convData.markdownLines[1], "|")
-		if len(alignLine) < 2 {
-			return
-		}
-		if len(convData.markdownLines) > 2 {
-			convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
-		} else {
-			convData.markdownLines = []string{convData.markdownLines[0]}
-		}
+		convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
 		alignLine = alignLine[1 : len(alignLine)-1]
 		for i := range alignLine {
-			colonR := string(alignLine[i][len(alignLine[i])-1]) == ":"
-			colonL := string(alignLine[i][0]) == ":"
-			if colonR && !colonL {
+			switch [2]bool{string(alignLine[i][len(alignLine[i])-1]) == ":", string(alignLine[i][0]) == ":"} {
+			case [2]bool{true, false}:
 				convData.tableAlign = append(convData.tableAlign, "right")
-			} else if !colonR && colonL {
+			case [2]bool{false, true}:
 				convData.tableAlign = append(convData.tableAlign, "left")
-			} else {
+			default:
 				convData.tableAlign = append(convData.tableAlign, "center")
 			}
 		}
 	}
 
 	// <tr>
-	var reg = `\|`
+	var reg = `\|` + strings.Repeat(`([^|]*)\|`, len(convData.tableAlign)) + `$`
 	var htm = ""
 	for i := range convData.tableAlign {
-		reg += `([^|]*)\|`
 		htm += fmt.Sprintf("<%s align='%s'>$%s</%s>", tag, convData.tableAlign[i], strconv.Itoa(i+1), tag)
 	}
-	reg += `$`
-	text += "<tr>" + regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm) + "</tr>"
-	convData.markdownLines[0] = text
+	convData.markdownLines[0] = fmt.Sprintf("%s<tr>%s</tr>", text, regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm))
 
 	// inline
 	convData.inlineConv()
