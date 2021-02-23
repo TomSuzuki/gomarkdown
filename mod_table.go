@@ -8,7 +8,7 @@ import (
 )
 
 // tableConv ...table generation
-func tableConv(convData convertedData) convertedData {
+func (convData *convertedData) tableConv() {
 	var tag = "td"
 	var text = ""
 
@@ -17,11 +17,11 @@ func tableConv(convData convertedData) convertedData {
 		tag = "th"
 		text = "<table>"
 		if len(convData.markdownLines) == 1 {
-			return convData
+			return
 		}
 		alignLine := strings.Split(convData.markdownLines[1], "|")
 		if len(alignLine) < 2 {
-			return convData
+			return
 		}
 		if len(convData.markdownLines) > 2 {
 			convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
@@ -54,14 +54,11 @@ func tableConv(convData convertedData) convertedData {
 	convData.markdownLines[0] = text
 
 	// inline
-	convData, _ = inlineConv(convData)
-
-	return convData
+	convData.inlineConv()
 }
 
 // tableClose ...
-func tableClose(convData convertedData) convertedData {
+func (convData *convertedData) tableClose() {
 	convData.markdownLines[0] = fmt.Sprintf("</table>%s", convData.markdownLines[0])
 	convData.tableAlign = nil
-	return convData
 }

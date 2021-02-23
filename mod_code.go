@@ -1,18 +1,16 @@
 package gomarkdown
 
 // codeMarkerConv ...start code lines
-func codeMarkerConv(convData convertedData) convertedData {
+func (convData *convertedData) codeMarkerConv() {
 	if convData.typeChenged {
 		convData.markdownLines[0] = "<pre><code>"
 	}
-	return convData
 }
 
 // codeClose ...close code lines
-func codeClose(convData convertedData) convertedData {
+func (convData *convertedData) codeClose() {
 	if convData.lineType == typeCodeMarker {
 		convData.markdownLines[0] = "</code></pre>"
 		convData.lineType = typeNone
 	}
-	return convData
 }

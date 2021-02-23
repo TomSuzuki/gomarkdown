@@ -31,7 +31,7 @@ func listRegInfo() []regList {
 }
 
 // inlineConv ...replacement in line (regular expressions)
-func inlineConv(convData convertedData) (convertedData, bool) {
+func (convData *convertedData) inlineConv() bool {
 	var inline = true
 	var regexpInfo = listRegInfo()
 
@@ -44,5 +44,5 @@ func inlineConv(convData convertedData) (convertedData, bool) {
 		convData.markdownLines[0] = line
 	}
 
-	return convData, inline
+	return inline
 }

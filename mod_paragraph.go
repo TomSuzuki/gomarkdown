@@ -3,10 +3,9 @@ package gomarkdown
 import "fmt"
 
 // paragraphConv ...
-func paragraphConv(convData convertedData) convertedData {
+func (convData *convertedData) paragraphConv() {
 	// inline
-	var inline bool
-	convData, inline = inlineConv(convData)
+	inline := convData.inlineConv()
 
 	// if inline or no
 	if !inline && !convData.typeChenged {
@@ -17,12 +16,9 @@ func paragraphConv(convData convertedData) convertedData {
 	} else if inline && convData.typeChenged {
 		convData.markdownLines[0] = fmt.Sprintf("<p>%s", convData.markdownLines[0])
 	}
-
-	return convData
 }
 
 // paragraphClose ...
-func paragraphClose(convData convertedData) convertedData {
+func (convData *convertedData) paragraphClose() {
 	convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
-	return convData
 }

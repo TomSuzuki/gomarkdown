@@ -46,33 +46,33 @@ func MarkdownToHTML(markdown string) string {
 	for len(convData.markdownLines) > 0 {
 		// get line type
 		oldType := convData.lineType
-		convData.lineType = getLineType(convData)
+		convData.lineType = convData.getLineType()
 
 		// if type changed
 		convData.typeChenged = convData.lineType != oldType
 		if convData.typeChenged {
 			switch oldType {
 			case typeTable:
-				convData = tableClose(convData)
+				convData.tableClose()
 			case typeCode:
-				convData = codeClose(convData)
+				convData.codeClose()
 			case typeList:
-				convData = listClose(convData)
+				convData.listClose()
 			case typeParagraph:
-				convData = paragraphClose(convData)
+				convData.paragraphClose()
 			}
 		}
 
 		// markdown -> html
 		switch convData.lineType {
 		case typeTable:
-			convData = tableConv(convData)
+			convData.tableConv()
 		case typeCodeMarker:
-			convData = codeMarkerConv(convData)
+			convData.codeMarkerConv()
 		case typeList:
-			convData = listConv(convData)
+			convData.listConv()
 		case typeParagraph:
-			convData = paragraphConv(convData)
+			convData.paragraphConv()
 		}
 
 		// add html
@@ -84,7 +84,7 @@ func MarkdownToHTML(markdown string) string {
 }
 
 // getLineType ...determine the type of line
-func getLineType(convData convertedData) linetype {
+func (convData *convertedData) getLineType() linetype {
 	var line = convData.markdownLines[0]
 
 	// check

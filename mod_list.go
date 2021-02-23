@@ -6,7 +6,7 @@ import (
 )
 
 // listConv ...list generation
-func listConv(convData convertedData) convertedData {
+func (convData *convertedData) listConv() {
 	var line = convData.markdownLines[0]
 	var text = ""
 	var tag = ""
@@ -58,19 +58,15 @@ func listConv(convData convertedData) convertedData {
 	convData.markdownLines[0] = text
 
 	// inline
-	convData, _ = inlineConv(convData)
-
-	return convData
+	convData.inlineConv()
 }
 
 // listClose ...close list
-func listClose(convData convertedData) convertedData {
+func (convData *convertedData) listClose() {
 	var text = ""
 	for i := len(convData.listNest) - 1; i >= 0; i-- {
 		text = fmt.Sprintf("%s</li></%s>", text, convData.listNest[i])
 	}
 	convData.markdownLines[0] = fmt.Sprintf("%s%s", text, convData.markdownLines[0])
 	convData.listNest = nil
-
-	return convData
 }
