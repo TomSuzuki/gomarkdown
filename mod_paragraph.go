@@ -20,5 +20,6 @@ func (convData *convertedData) paragraphConv() {
 
 // paragraphClose ...
 func (convData *convertedData) paragraphClose() {
-	convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
+	convData.shiftLine()
+	convData.markdownLines[0] = "</p>"
 }

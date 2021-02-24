@@ -48,6 +48,7 @@ func (convData *convertedData) tableConv() {
 
 // tableClose ...
 func (convData *convertedData) tableClose() {
-	convData.markdownLines[0] = fmt.Sprintf("</table>%s", convData.markdownLines[0])
+	convData.shiftLine()
+	convData.markdownLines[0] = "</table>"
 	convData.tableAlign = nil
 }

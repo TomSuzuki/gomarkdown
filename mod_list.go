@@ -30,7 +30,7 @@ func (convData *convertedData) listConv() {
 	convData.markdownLines[0] = fmt.Sprintf("%s<li>%s", openTags, line)
 
 	// close
-	convData.listTagClose(nest, oldNest, true)
+	convData.listTagClose(nest, oldNest)
 
 	// inline
 	convData.inlineConv()
@@ -38,11 +38,12 @@ func (convData *convertedData) listConv() {
 
 // listClose ...close list
 func (convData *convertedData) listClose() {
-	convData.listTagClose(0, len(convData.listNest), false)
+	convData.shiftLine()
+	convData.listTagClose(0, len(convData.listNest))
 }
 
 // listTagClose
-func (convData *convertedData) listTagClose(nest int, oldNest int, inlist bool) {
+func (convData *convertedData) listTagClose(nest int, oldNest int) {
 	var tags = ""
 	var tagl = "" // Add </li> that could not be added to the list when the nesting is finished.
 
@@ -58,7 +59,7 @@ func (convData *convertedData) listTagClose(nest int, oldNest int, inlist bool) 
 	}
 
 	// append
-	if !inlist || oldNest > nest {
+	if oldNest > nest {
 		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tags, tagl, convData.markdownLines[0])
 	} else {
 		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tagl, convData.markdownLines[0], tags)

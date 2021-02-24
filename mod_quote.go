@@ -39,7 +39,7 @@ func (convData *convertedData) quoteConv() {
 	convData.markdownLines[0] = tags + convData.markdownLines[0]
 
 	// close
-	convData.quoteTagClose(nest, true)
+	convData.quoteTagClose(nest)
 
 	// inline
 	convData.inlineConv()
@@ -47,19 +47,16 @@ func (convData *convertedData) quoteConv() {
 
 // quoteClose
 func (convData *convertedData) quoteClose() {
-	convData.quoteTagClose(0, false)
+	convData.shiftLine()
+	convData.quoteTagClose(0)
 }
 
 // quoteTagClose
-func (convData *convertedData) quoteTagClose(nest int, inquote bool) {
+func (convData *convertedData) quoteTagClose(nest int) {
 	var oldNest = convData.nestQuote
 
 	for convData.nestQuote > nest {
-		if inquote {
-			convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
-		} else {
-			convData.markdownLines[0] = fmt.Sprintf("</blockquote>%s", convData.markdownLines[0])
-		}
+		convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
 		convData.nestQuote--
 	}
 

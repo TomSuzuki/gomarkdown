@@ -24,6 +24,7 @@ const (
 	typeCodeMarker
 	typeTable
 	typeQuote
+	typeHeader
 )
 
 // all data
@@ -79,6 +80,8 @@ func MarkdownToHTML(markdown string) string {
 			convData.paragraphConv()
 		case typeQuote:
 			convData.quoteConv()
+		case typeHeader:
+			convData.headerConv()
 		}
 
 		// add html
@@ -98,6 +101,8 @@ func (convData *convertedData) getLineType() linetype {
 		return typeCodeMarker
 	} else if convData.lineType == typeCodeMarker || convData.lineType == typeCode {
 		return typeCode
+	} else if convData.isHeader() {
+		return typeHeader
 	} else if (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "") {
 		return typeQuote
 	} else if (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. " {
@@ -108,4 +113,8 @@ func (convData *convertedData) getLineType() linetype {
 		return typeNone
 	}
 	return typeParagraph
+}
+
+func (convData *convertedData) shiftLine() {
+	convData.markdownLines = append([]string{""}, convData.markdownLines...)
 }
