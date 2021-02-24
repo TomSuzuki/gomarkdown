@@ -47,20 +47,21 @@ func MarkdownToHTML(markdown string) string {
 
 	// lines
 	for len(convData.markdownLines) > 0 {
-		// get line type
-		oldType := convData.lineType
-		convData.lineType = convData.getLineType()
-
 		// if type changed
-		convData.typeChenged = convData.lineType != oldType
-		if f := map[linetype]func(){
-			typeTable:     convData.tableClose,
-			typeCode:      convData.codeClose,
-			typeList:      convData.listClose,
-			typeParagraph: convData.paragraphClose,
-			typeQuote:     convData.quoteClose,
-		}[oldType]; convData.typeChenged && f != nil {
-			f()
+		if t, f := func() (linetype, func()) {
+			return convData.getLineType(), map[linetype]func(){
+				typeTable:     convData.tableClose,
+				typeCode:      convData.codeClose,
+				typeList:      convData.listClose,
+				typeParagraph: convData.paragraphClose,
+				typeQuote:     convData.quoteClose,
+			}[convData.lineType]
+		}(); convData.lineType != t {
+			convData.lineType = t
+			convData.typeChenged = true
+			if f != nil {
+				f()
+			}
 		}
 
 		// markdown -> html
