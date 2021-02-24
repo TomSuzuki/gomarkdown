@@ -43,7 +43,6 @@ type convertedData struct {
 func MarkdownToHTML(markdown string) string {
 	// init
 	var convData convertedData
-	convData.lineType = typeNone
 	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n", "\n", "\n").Replace(markdown), "\n"), "")
 
 	// lines
@@ -54,35 +53,26 @@ func MarkdownToHTML(markdown string) string {
 
 		// if type changed
 		convData.typeChenged = convData.lineType != oldType
-		if convData.typeChenged {
-			switch oldType {
-			case typeTable:
-				convData.tableClose()
-			case typeCode:
-				convData.codeClose()
-			case typeList:
-				convData.listClose()
-			case typeParagraph:
-				convData.paragraphClose()
-			case typeQuote:
-				convData.quoteClose()
-			}
+		if f := map[linetype]func(){
+			typeTable:     convData.tableClose,
+			typeCode:      convData.codeClose,
+			typeList:      convData.listClose,
+			typeParagraph: convData.paragraphClose,
+			typeQuote:     convData.quoteClose,
+		}[oldType]; convData.typeChenged && f != nil {
+			f()
 		}
 
 		// markdown -> html
-		switch convData.lineType {
-		case typeTable:
-			convData.tableConv()
-		case typeCodeMarker:
-			convData.codeMarkerConv()
-		case typeList:
-			convData.listConv()
-		case typeParagraph:
-			convData.paragraphConv()
-		case typeQuote:
-			convData.quoteConv()
-		case typeHeader:
-			convData.headerConv()
+		if f := map[linetype]func(){
+			typeTable:      convData.tableConv,
+			typeCodeMarker: convData.codeMarkerConv,
+			typeList:       convData.listConv,
+			typeParagraph:  convData.paragraphConv,
+			typeQuote:      convData.quoteConv,
+			typeHeader:     convData.headerConv,
+		}[convData.lineType]; f != nil {
+			f()
 		}
 
 		// add html
