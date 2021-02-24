@@ -14,35 +14,27 @@ func (convData *convertedData) isQuote() bool {
 // quoteConv
 func (convData *convertedData) quoteConv() {
 	// >
-	nest := 0
-	for {
-		n := strings.Index(convData.markdownLines[0], "> ")
-		if (n > 0 && strings.Trim(convData.markdownLines[0][:n], " ") != "") || n == -1 {
-			break
-		} else {
-			convData.markdownLines[0] = convData.markdownLines[0][n+2:]
-			nest++
-		}
-	}
+	nest := strings.Count(convData.markdownLines[0], "> ")
 	if nest == 0 {
 		nest = convData.nestQuote
+	} else {
+		convData.markdownLines[0] = convData.markdownLines[0][2*nest:]
 	}
 
 	// open
-	var oldNest = convData.nestQuote
-	var tags = ""
-	for convData.nestQuote < nest {
-		convData.nestQuote++
-		if convData.nestQuote == nest {
-			tags = fmt.Sprintf("%s<blockquote><p>", tags)
-		} else {
+	if convData.nestQuote < nest {
+		var oldNest = convData.nestQuote
+		var tags = ""
+		for convData.nestQuote < nest {
+			convData.nestQuote++
 			tags = fmt.Sprintf("%s<blockquote>", tags)
+			if oldNest != 0 {
+				tags = fmt.Sprintf("</p>%s", tags)
+			}
 		}
-		if oldNest != 0 {
-			tags = fmt.Sprintf("</p>%s", tags)
-		}
+
+		convData.markdownLines[0] = fmt.Sprintf("%s<p>%s", tags, convData.markdownLines[0])
 	}
-	convData.markdownLines[0] = tags + convData.markdownLines[0]
 
 	// close
 	convData.quoteTagClose(nest)
@@ -59,14 +51,11 @@ func (convData *convertedData) quoteClose() {
 
 // quoteTagClose
 func (convData *convertedData) quoteTagClose(nest int) {
-	var oldNest = convData.nestQuote
-
-	for convData.nestQuote > nest {
-		convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
-		convData.nestQuote--
-	}
-
-	if oldNest > nest {
+	if convData.nestQuote > nest {
+		for convData.nestQuote > nest {
+			convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
+			convData.nestQuote--
+		}
 		convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
 	}
 }
