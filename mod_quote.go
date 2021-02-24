@@ -7,14 +7,32 @@ import (
 
 // quoteConv
 func (convData *convertedData) quoteConv() {
-	// del >
-	n := strings.Index(convData.markdownLines[0], "> ")
-	convData.markdownLines[0] = convData.markdownLines[0][n+2:]
+	// >
+	nest := 0
+	for flg := true; flg; {
+		n := strings.Index(convData.markdownLines[0], "> ")
+		if n > 0 && strings.Trim(convData.markdownLines[0][:n], " ") != "" {
+			n = -1
+		}
+		if n != -1 {
+			convData.markdownLines[0] = convData.markdownLines[0][n+2:]
+			nest++
+		} else {
+			flg = false
+		}
+	}
 
 	// open
-	if convData.typeChenged {
+	for convData.nestQuote < nest {
 		convData.markdownLines[0] = fmt.Sprintf("<blockquote><p>%s", convData.markdownLines[0])
+		if convData.nestQuote != 0 {
+			convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
+		}
+		convData.nestQuote++
 	}
+
+	// close
+	convData.quoteTagClose(nest, true)
 
 	// inline
 	convData.inlineConv()
@@ -22,5 +40,23 @@ func (convData *convertedData) quoteConv() {
 
 // quoteClose
 func (convData *convertedData) quoteClose() {
-	convData.markdownLines[0] = "</p></blockquote>"
+	convData.quoteTagClose(0, false)
+}
+
+// quoteTagClose
+func (convData *convertedData) quoteTagClose(nest int, inquote bool) {
+	var oldNest = convData.nestQuote
+
+	for convData.nestQuote > nest {
+		if inquote {
+			convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
+		} else {
+			convData.markdownLines[0] = fmt.Sprintf("</blockquote>%s", convData.markdownLines[0])
+		}
+		convData.nestQuote--
+	}
+
+	if oldNest > nest {
+		convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
+	}
 }

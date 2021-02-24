@@ -34,6 +34,7 @@ type convertedData struct {
 	tableAlign    []string
 	listNest      []string
 	typeChenged   bool
+	nestQuote     int
 }
 
 // MarkdownToHTML ...import markdown text, it will return HTML text
