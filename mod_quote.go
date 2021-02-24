@@ -22,20 +22,19 @@ func (convData *convertedData) quoteConv() {
 	}
 
 	// open
-	var oldNest = convData.nestQuote
-	var tags = ""
-	for convData.nestQuote < nest {
-		convData.nestQuote++
-		if convData.nestQuote == nest {
-			tags = fmt.Sprintf("%s<blockquote><p>", tags)
-		} else {
+	if convData.nestQuote < nest {
+		var oldNest = convData.nestQuote
+		var tags = ""
+		for convData.nestQuote < nest {
+			convData.nestQuote++
 			tags = fmt.Sprintf("%s<blockquote>", tags)
+			if oldNest != 0 {
+				tags = fmt.Sprintf("</p>%s", tags)
+			}
 		}
-		if oldNest != 0 {
-			tags = fmt.Sprintf("</p>%s", tags)
-		}
+
+		convData.markdownLines[0] = fmt.Sprintf("%s<p>%s", tags, convData.markdownLines[0])
 	}
-	convData.markdownLines[0] = tags + convData.markdownLines[0]
 
 	// close
 	convData.quoteTagClose(nest)
