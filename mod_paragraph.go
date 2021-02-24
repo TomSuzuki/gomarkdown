@@ -1,6 +1,14 @@
 package gomarkdown
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+// isNone
+func (convData *convertedData) isNone() bool {
+	return strings.Trim(convData.markdownLines[0], " ") == ""
+}
 
 // paragraphConv ...
 func (convData *convertedData) paragraphConv() {

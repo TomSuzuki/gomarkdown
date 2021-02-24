@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+// isList
+func (convData *convertedData) isList() bool {
+	var line = convData.markdownLines[0]
+	return (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. "
+}
+
 // listConv ...list generation
 func (convData *convertedData) listConv() {
 	var line = convData.markdownLines[0]

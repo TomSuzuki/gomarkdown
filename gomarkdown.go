@@ -16,6 +16,7 @@ import (
 // type of line
 type linetype int
 
+// define type
 const (
 	typeNone linetype = iota
 	typeParagraph
@@ -94,27 +95,28 @@ func MarkdownToHTML(markdown string) string {
 
 // getLineType ...determine the type of line
 func (convData *convertedData) getLineType() linetype {
-	var line = convData.markdownLines[0]
-
-	// check
-	if (line + "   ")[:3] == "```" {
+	// the higher it is, the higher the priority
+	switch true {
+	case convData.isCodeMarker():
 		return typeCodeMarker
-	} else if convData.lineType == typeCodeMarker || convData.lineType == typeCode {
+	case convData.isCode():
 		return typeCode
-	} else if convData.isHeader() {
+	case convData.isHeader():
 		return typeHeader
-	} else if (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "") {
+	case convData.isQuote():
 		return typeQuote
-	} else if (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. " {
+	case convData.isList():
 		return typeList
-	} else if (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1 {
+	case convData.isTable():
 		return typeTable
-	} else if strings.Trim(line, " ") == "" {
+	case convData.isNone():
 		return typeNone
+	default:
+		return typeParagraph
 	}
-	return typeParagraph
 }
 
+// shiftLine ...at the end of the block, it may break the next element if it is not a replacement
 func (convData *convertedData) shiftLine() {
 	convData.markdownLines = append([]string{""}, convData.markdownLines...)
 }

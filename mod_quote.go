@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+// isQuote
+func (convData *convertedData) isQuote() bool {
+	var line = convData.markdownLines[0]
+	return (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "")
+}
+
 // quoteConv
 func (convData *convertedData) quoteConv() {
 	// >

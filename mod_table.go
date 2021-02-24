@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+// isTable
+func (convData *convertedData) isTable() bool {
+	var line = convData.markdownLines[0]
+	return (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1
+}
+
 // tableConv ...table generation
 func (convData *convertedData) tableConv() {
 	var tag = "td"
