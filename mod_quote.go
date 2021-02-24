@@ -9,17 +9,17 @@ import (
 func (convData *convertedData) quoteConv() {
 	// >
 	nest := 0
-	for flg := true; flg; {
+	for {
 		n := strings.Index(convData.markdownLines[0], "> ")
-		if n > 0 && strings.Trim(convData.markdownLines[0][:n], " ") != "" {
-			n = -1
-		}
-		if n != -1 {
+		if (n > 0 && strings.Trim(convData.markdownLines[0][:n], " ") != "") || n == -1 {
+			break
+		} else {
 			convData.markdownLines[0] = convData.markdownLines[0][n+2:]
 			nest++
-		} else {
-			flg = false
 		}
+	}
+	if nest == 0 {
+		nest = convData.nestQuote
 	}
 
 	// open

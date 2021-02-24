@@ -98,12 +98,12 @@ func (convData *convertedData) getLineType() linetype {
 		return typeCodeMarker
 	} else if convData.lineType == typeCodeMarker || convData.lineType == typeCode {
 		return typeCode
+	} else if (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "") {
+		return typeQuote
 	} else if (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. " {
 		return typeList
 	} else if (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1 {
 		return typeTable
-	} else if (strings.Trim(line, " ") + " ")[:1] == ">" {
-		return typeQuote
 	} else if strings.Trim(line, " ") == "" {
 		return typeNone
 	}
