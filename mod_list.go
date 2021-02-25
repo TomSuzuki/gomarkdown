@@ -11,6 +11,14 @@ func (convData *convertedData) isList() bool {
 	return (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. "
 }
 
+// listStyle
+var listStyle = map[string]string{
+	"- ":  "ul",
+	"* ":  "ul",
+	"1. ": "ol",
+	"+ ":  "ul",
+}
+
 // listConv ...list generation
 func (convData *convertedData) listConv() {
 	var line = convData.markdownLines[0]
@@ -19,7 +27,7 @@ func (convData *convertedData) listConv() {
 	var oldNest = len(convData.listNest)
 
 	// list type and open list
-	for tag, md := range map[string]string{"ul": "- ", "ol": "1. "} {
+	for md, tag := range listStyle {
 		if strings.Index(strings.Trim(line, " "), md) == 0 {
 			nest = 1 + strings.Index(line, md)/2
 			line = line[strings.Index(line, md)+len(md):]

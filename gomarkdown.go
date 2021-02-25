@@ -45,6 +45,25 @@ func MarkdownToHTML(markdown string) string {
 	var convData convertedData
 	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n", "\n", "\n").Replace(markdown), "\n"), "")
 
+	// closeBlockFunc
+	var closeBlockFunc = map[linetype]func(){
+		typeTable:     convData.tableClose,
+		typeCode:      convData.codeClose,
+		typeList:      convData.listClose,
+		typeParagraph: convData.paragraphClose,
+		typeQuote:     convData.quoteClose,
+	}
+
+	// convBlockFunc
+	var convBlockFunc = map[linetype]func(){
+		typeTable:      convData.tableConv,
+		typeCodeMarker: convData.codeMarkerConv,
+		typeList:       convData.listConv,
+		typeParagraph:  convData.paragraphConv,
+		typeQuote:      convData.quoteConv,
+		typeHeader:     convData.headerConv,
+	}
+
 	// lines
 	for len(convData.markdownLines) > 0 {
 		// if type changed
@@ -52,26 +71,13 @@ func MarkdownToHTML(markdown string) string {
 			oldType := convData.lineType
 			convData.lineType = convData.getLineType()
 			convData.typeChenged = convData.lineType != oldType
-			if f := map[linetype]func(){
-				typeTable:     convData.tableClose,
-				typeCode:      convData.codeClose,
-				typeList:      convData.listClose,
-				typeParagraph: convData.paragraphClose,
-				typeQuote:     convData.quoteClose,
-			}[oldType]; convData.typeChenged && f != nil {
+			if f := closeBlockFunc[oldType]; convData.typeChenged && f != nil {
 				f()
 			}
 		}()
 
 		// markdown -> html
-		if f := map[linetype]func(){
-			typeTable:      convData.tableConv,
-			typeCodeMarker: convData.codeMarkerConv,
-			typeList:       convData.listConv,
-			typeParagraph:  convData.paragraphConv,
-			typeQuote:      convData.quoteConv,
-			typeHeader:     convData.headerConv,
-		}[convData.lineType]; f != nil {
+		if f := convBlockFunc[convData.lineType]; f != nil {
 			f()
 		}
 
