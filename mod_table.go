@@ -21,7 +21,7 @@ func (convData *convertedData) tableConv() {
 	// align
 	if convData.tableAlign == nil {
 		tag = "th"
-		text = "<table>"
+		text = "<table><thead>"
 		if len(convData.markdownLines) == 1 {
 			return
 		}
@@ -48,6 +48,11 @@ func (convData *convertedData) tableConv() {
 	}
 	convData.markdownLines[0] = fmt.Sprintf("%s<tr>%s</tr>", text, regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm))
 
+	// thead and tbody
+	if tag == "th" {
+		convData.markdownLines[0] = fmt.Sprintf("%s</thead><tbody>", convData.markdownLines[0])
+	}
+
 	// inline
 	convData.inlineConv()
 }
@@ -55,6 +60,6 @@ func (convData *convertedData) tableConv() {
 // tableClose ...
 func (convData *convertedData) tableClose() {
 	convData.shiftLine()
-	convData.markdownLines[0] = "</table>"
+	convData.markdownLines[0] = "</tbody></table>"
 	convData.tableAlign = nil
 }
