@@ -23,7 +23,8 @@ const (
 	typeList
 	typeCode
 	typeCodeMarker
-	typeTable
+	typeTableHead
+	typeTableBody
 	typeQuote
 	typeHeader
 )
@@ -47,7 +48,8 @@ func MarkdownToHTML(markdown string) string {
 
 	// closeBlockFunc
 	var closeBlockFunc = map[linetype]func(){
-		typeTable:     convData.tableClose,
+		typeTableBody: convData.tableBodyClose,
+		typeTableHead: convData.tableHeadClose,
 		typeCode:      convData.codeClose,
 		typeList:      convData.listClose,
 		typeParagraph: convData.paragraphClose,
@@ -56,7 +58,8 @@ func MarkdownToHTML(markdown string) string {
 
 	// convBlockFunc
 	var convBlockFunc = map[linetype]func(){
-		typeTable:      convData.tableConv,
+		typeTableBody:  convData.tableBodyConv,
+		typeTableHead:  convData.tableHeadConv,
 		typeCodeMarker: convData.codeMarkerConv,
 		typeList:       convData.listConv,
 		typeParagraph:  convData.paragraphConv,
@@ -103,8 +106,10 @@ func (convData *convertedData) getLineType() linetype {
 		return typeQuote
 	case convData.isList():
 		return typeList
-	case convData.isTable():
-		return typeTable
+	case convData.isTableBody():
+		return typeTableBody
+	case convData.isTableHead():
+		return typeTableHead
 	case convData.isNone():
 		return typeNone
 	default:
