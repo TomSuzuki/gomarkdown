@@ -27,6 +27,7 @@ const (
 	typeTableBody
 	typeQuote
 	typeHeader
+	typeHorizon
 )
 
 // all data
@@ -65,19 +66,20 @@ func MarkdownToHTML(markdown string) string {
 		typeParagraph:  convData.paragraphConv,
 		typeQuote:      convData.quoteConv,
 		typeHeader:     convData.headerConv,
+		typeHorizon:    convData.horizonConv,
 	}
 
 	// lines
 	for len(convData.markdownLines) > 0 {
 		// if type changed
-		func() {
-			oldType := convData.lineType
-			convData.lineType = convData.getLineType()
-			convData.typeChenged = convData.lineType != oldType
-			if f := closeBlockFunc[oldType]; convData.typeChenged && f != nil {
-				f()
-			}
-		}()
+		oldType := convData.lineType
+		convData.lineType = convData.getLineType()
+		convData.typeChenged = convData.lineType != oldType
+
+		// close tag
+		if f := closeBlockFunc[oldType]; convData.typeChenged && f != nil {
+			f()
+		}
 
 		// markdown -> html
 		if f := convBlockFunc[convData.lineType]; f != nil {
@@ -106,6 +108,8 @@ func (convData *convertedData) getLineType() linetype {
 		return typeQuote
 	case convData.isList():
 		return typeList
+	case convData.isHorizon():
+		return typeHorizon
 	case convData.isTableBody():
 		return typeTableBody
 	case convData.isTableHead():
@@ -120,4 +124,5 @@ func (convData *convertedData) getLineType() linetype {
 // shiftLine ...at the end of the block, it may break the next element if it is not a replacement
 func (convData *convertedData) shiftLine() {
 	convData.markdownLines = append([]string{""}, convData.markdownLines...)
+	convData.lineType = typeNone
 }

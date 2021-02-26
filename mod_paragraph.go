@@ -13,15 +13,10 @@ func (convData *convertedData) isNone() bool {
 // paragraphConv ...
 func (convData *convertedData) paragraphConv() {
 	// inline
-	inline := convData.inlineConv()
+	convData.inlineConv()
 
-	// if inline or no
-	if !inline && !convData.typeChenged {
-		convData.lineType = typeNone
-		convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
-	} else if !inline {
-		convData.lineType = typeNone
-	} else if inline && convData.typeChenged {
+	// open <p>
+	if convData.typeChenged {
 		convData.markdownLines[0] = fmt.Sprintf("<p>%s", convData.markdownLines[0])
 	}
 }
