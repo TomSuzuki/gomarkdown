@@ -16,16 +16,12 @@ var listRegInfo = [][2]string{
 func (convData *convertedData) inlineConv() {
 
 	// inline text
-	for _, v := range [][]string{
-		{"**", "strong"},
-		{"`", "code"},
-		{"~", "s"},
-		{"__", "em"},
-		{"_", "em"},
-		{"*", "em"},
-	} {
-		convData.inlineTage(v[0], v[1])
-	}
+	convData.inlineTage("**", "strong")
+	convData.inlineTage("`", "code")
+	convData.inlineTage("~", "s")
+	convData.inlineTage("__", "em")
+	convData.inlineTage("_", "em")
+	convData.inlineTage("*", "em")
 
 	// <img> and <a>
 	for _, v := range listRegInfo {
