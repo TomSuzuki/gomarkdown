@@ -2,40 +2,24 @@ package gomarkdown
 
 import "regexp"
 
-// regular expression information
-type regList struct {
-	regexp   string
-	html     string
-	isInline bool
-}
-
-// regular expression information list
-func listRegInfo() []regList {
-	return []regList{
-		{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>", true},
-		{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>", true},
-		{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>", true},
-		{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>", true},
-		{`\s\s$`, "<br>", true},
-		{`^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`, "<hr>", false},
-		{"~([^~]*)~", "<s>$1</s>", true},
-		{"`([^`]*)`", "<code>$1</code>", true},
-	}
+// inline / regular expression information list {markdonw, html} !attention to the priority
+var listRegInfo = [][2]string{
+	{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>"},
+	{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>"},
+	{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
+	{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>"},
+	{`\s\s$`, "<br>"},
+	{"~([^~]*)~", "<s>$1</s>"},
+	{"`([^`]*)`", "<code>$1</code>"},
 }
 
 // inlineConv ...replacement in line (regular expressions)
-func (convData *convertedData) inlineConv() bool {
-	var inline = true
-	var regexpInfo = listRegInfo()
-
-	for i := range regexpInfo {
+func (convData *convertedData) inlineConv() {
+	for _, v := range listRegInfo {
+		var md = v[0]
+		var html = v[1]
 		line := convData.markdownLines[0]
-		line = regexp.MustCompile(regexpInfo[i].regexp).ReplaceAllString(line, regexpInfo[i].html)
-		if convData.markdownLines[0] != line && !regexpInfo[i].isInline {
-			inline = false
-		}
+		line = regexp.MustCompile(md).ReplaceAllString(line, html)
 		convData.markdownLines[0] = line
 	}
-
-	return inline
 }

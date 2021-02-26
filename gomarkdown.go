@@ -27,6 +27,7 @@ const (
 	typeTableBody
 	typeQuote
 	typeHeader
+	typeHorizon
 )
 
 // all data
@@ -65,6 +66,7 @@ func MarkdownToHTML(markdown string) string {
 		typeParagraph:  convData.paragraphConv,
 		typeQuote:      convData.quoteConv,
 		typeHeader:     convData.headerConv,
+		typeHorizon:    convData.horizonConv,
 	}
 
 	// lines
@@ -106,6 +108,8 @@ func (convData *convertedData) getLineType() linetype {
 		return typeQuote
 	case convData.isList():
 		return typeList
+	case convData.isHorizon():
+		return typeHorizon
 	case convData.isTableBody():
 		return typeTableBody
 	case convData.isTableHead():
