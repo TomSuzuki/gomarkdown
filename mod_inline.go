@@ -8,22 +8,12 @@ import (
 
 // inline / regular expression information list {markdonw, html} !attention to the priority
 var listRegInfo = [][2]string{
-	//{`\*\*([^\*]*)\*\*`, "<strong>$1</strong>"},
 	{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>"},
 	{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
-	//{`\*([^\*]*)\*|_([^_]*)_|__([^_]*)__`, "<em>$1</em>"},
-	//{"~([^~]*)~", "<s>$1</s>"},
 }
 
 // inlineConv ...replacement in line (regular expressions)
 func (convData *convertedData) inlineConv() {
-	for _, v := range listRegInfo {
-		var md = v[0]
-		var html = v[1]
-		line := convData.markdownLines[0]
-		line = regexp.MustCompile(md).ReplaceAllString(line, html)
-		convData.markdownLines[0] = line
-	}
 
 	// inline text
 	for _, v := range [][]string{
@@ -37,30 +27,55 @@ func (convData *convertedData) inlineConv() {
 		convData.inlineTage(v[0], v[1])
 	}
 
+	// <img> and <a>
+	for _, v := range listRegInfo {
+		var md = v[0]
+		var html = v[1]
+		line := convData.markdownLines[0]
+		line = regexp.MustCompile(md).ReplaceAllString(line, html)
+		convData.markdownLines[0] = line
+	}
+
 	// <br>
 	convData.markdownLines[0] = strings.Replace(convData.markdownLines[0], "  ", "<br>", -1)
 }
 
-// [! Needs correction !] inlineTage ...md -> html / "* text - text * text - " <- ????
+// inlineTage ...md -> html
 func (convData *convertedData) inlineTage(md string, html string) {
 	var codeList = strings.Split(convData.markdownLines[0], md)
-	var lastText = ""
-
-	convData.markdownLines[0] = codeList[0]
-	codeList = codeList[1:]
-	if len(codeList)%2 != 0 {
-		lastText = md + codeList[len(codeList)-1]
-		codeList = codeList[:len(codeList)-1]
-	}
+	convData.markdownLines[0] = ""
+	var isEven = len(codeList)%2 == 0
 
 	// insert tags
 	for i, v := range codeList {
-		if i%2 == 0 {
-			convData.markdownLines[0] += fmt.Sprintf("<%s>%s", html, v)
+		if isEven && i == len(codeList)-1 {
+			convData.markdownLines[0] += (md + v)
+		} else if i%2 == 0 {
+			convData.markdownLines[0] += v
+		} else if isNotBrokenHTML(v) {
+			convData.markdownLines[0] += fmt.Sprintf("<%s>%s</%s>", html, v, html)
 		} else {
-			convData.markdownLines[0] += fmt.Sprintf("</%s>%s", html, v)
+			convData.markdownLines[0] += (md + v)
 		}
 	}
+}
 
-	convData.markdownLines[0] += lastText
+// isNotBrokenHTML ..."<s></s><em></em>" <<< true, "<s><em></em>" <<< false, "<img ...>" <<< false...?
+func isNotBrokenHTML(html string) bool {
+	var nest = 0
+	var open = false
+	for _, s := range []byte(html) {
+		if open {
+			if string(s) == "/" {
+				nest--
+			} else {
+				nest++
+			}
+		}
+		open = string(s) == "<"
+		if nest == -1 {
+			return false
+		}
+	}
+	return nest == 0
 }
