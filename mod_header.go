@@ -1,7 +1,7 @@
 package gomarkdown
 
 import (
-	"regexp"
+	"fmt"
 	"strings"
 )
 
@@ -15,16 +15,10 @@ func (convData *convertedData) isHeader() bool {
 func (convData *convertedData) headerConv() {
 	// <h1> - <h6>
 	convData.markdownLines[0] = strings.Trim(convData.markdownLines[0], " ")
-	for md, html := range map[string]string{
-		`^#\s([^#]*?$)`:      "<h1>$1</h1>",
-		`^##\s([^#]*?$)`:     "<h2>$1</h2>",
-		`^###\s([^#]*?$)`:    "<h3>$1</h3>",
-		`^####\s([^#]*?$)`:   "<h4>$1</h4>",
-		`^#####\s([^#]*?$)`:  "<h5>$1</h5>",
-		`^######\s([^#]*?$)`: "<h6>$1</h6>",
-	} {
-		convData.markdownLines[0] = regexp.MustCompile(md).ReplaceAllString(convData.markdownLines[0], html)
-	}
+	head := strings.Split(convData.markdownLines[0], " ")[0]
+	h := strings.Count(head, "#")
+	text := convData.markdownLines[0][h+1:]
+	convData.markdownLines[0] = fmt.Sprintf("<h%d>%s</h%d>", h, text, h)
 
 	// inline
 	convData.inlineConv()
