@@ -42,9 +42,9 @@ func Test(t *testing.T) {
 	}
 
 	// test
-	// for i := range testfile {
-	// 	test(testfile[i], t)
-	// }
+	for i := range testfile {
+		test(testfile[i], t)
+	}
 
 	// speed test
 	for ct := 0; ct < 1000; ct++ {

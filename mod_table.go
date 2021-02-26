@@ -2,8 +2,6 @@ package gomarkdown
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -74,13 +72,28 @@ func (convData *convertedData) tableBodyClose() {
 
 // tableGenerate ...<tr>
 func (convData *convertedData) tableGenerate(tagType string) {
-	// <tr>
-	var reg = `\|` + strings.Repeat(`([^|]*)\|`, len(convData.tableAlign)) + `$`
-	var htm string
-	for i := range convData.tableAlign {
-		htm += fmt.Sprintf("<%s align='%s'>$%s</%s>", tagType, convData.tableAlign[i], strconv.Itoa(i+1), tagType)
+	// check
+	var tr = strings.Split(convData.markdownLines[0], "|")
+	if len(tr)-2 != len(convData.tableAlign) {
+		return
 	}
-	convData.markdownLines[0] = fmt.Sprintf("<tr>%s</tr>", regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm))
+
+	// make
+	var html []string
+	html = append(html, "<tr>")
+	for i, v := range convData.tableAlign {
+		html = append(html, "<")
+		html = append(html, tagType)
+		html = append(html, " align='")
+		html = append(html, v)
+		html = append(html, "'>")
+		html = append(html, tr[i+1])
+		html = append(html, "</")
+		html = append(html, tagType)
+		html = append(html, ">")
+	}
+	html = append(html, "</tr>")
+	convData.markdownLines[0] = strings.Join(html, "")
 }
 
 // tableAlign ... : --- :
