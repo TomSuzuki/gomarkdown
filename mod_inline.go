@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-// inline / regular expression information list {markdonw, html} !attention to the priority
-var listRegInfo = [][2]string{
-	{`!\[(.*?)\]\((.*?)\)`, "<img alt='$1' src='$2'>"},
-	{`\[(.*)\]\((.*)\)`, "<a href='$2'>$1</a>"},
-}
-
 // inlineConv ...replacement in line (regular expressions)
 func (convData *convertedData) inlineConv() {
 
@@ -24,13 +18,8 @@ func (convData *convertedData) inlineConv() {
 	convData.inlineTage("*", "em")
 
 	// <img> and <a>
-	for _, v := range listRegInfo {
-		var md = v[0]
-		var html = v[1]
-		line := convData.markdownLines[0]
-		line = regexp.MustCompile(md).ReplaceAllString(line, html)
-		convData.markdownLines[0] = line
-	}
+	convData.markdownLines[0] = regexp.MustCompile(`!\[(.*?)\]\((.*?)\)`).ReplaceAllString(convData.markdownLines[0], "<img alt='$1' src='$2'>")
+	convData.markdownLines[0] = regexp.MustCompile(`\[(.*)\]\((.*)\)`).ReplaceAllString(convData.markdownLines[0], "<a href='$2'>$1</a>")
 
 	// <br>
 	convData.markdownLines[0] = strings.Replace(convData.markdownLines[0], "  ", "<br>", -1)
@@ -60,7 +49,8 @@ func (convData *convertedData) inlineTage(md string, html string) {
 func isNotBrokenHTML(html string) bool {
 	var nest = 0
 	var open = false
-	for _, s := range []byte(html) {
+	for i := 0; i < len(html); i++ {
+		s := html[i]
 		if open {
 			if string(s) == "/" {
 				nest--

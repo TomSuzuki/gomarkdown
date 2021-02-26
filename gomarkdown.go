@@ -33,7 +33,7 @@ const (
 // all data
 type convertedData struct {
 	markdownLines []string
-	html          string
+	html          []string
 	lineType      linetype
 	tableAlign    []string
 	listNest      []string
@@ -87,11 +87,11 @@ func MarkdownToHTML(markdown string) string {
 		}
 
 		// add html
-		convData.html += convData.markdownLines[0]
+		convData.html = append(convData.html, convData.markdownLines[0])
 		convData.markdownLines = convData.markdownLines[1:]
 	}
 
-	return convData.html
+	return strings.Join(convData.html, "\n")
 }
 
 // getLineType ...determine the type of line
