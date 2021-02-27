@@ -7,8 +7,7 @@ import (
 
 // isQuote
 func (convData *convertedData) isQuote() bool {
-	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "")
+	return (strings.Trim(convData.markdownLines[0], " ") + "  ")[:2] == "> " || (convData.lineType == typeQuote && !convData.isNone())
 }
 
 // quoteConv

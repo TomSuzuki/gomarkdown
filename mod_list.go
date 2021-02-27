@@ -5,18 +5,23 @@ import (
 	"strings"
 )
 
-// isList
-func (convData *convertedData) isList() bool {
-	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. "
-}
-
 // listStyle
 var listStyle = map[string]string{
 	"- ":  "ul",
 	"* ":  "ul",
 	"1. ": "ol",
 	"+ ":  "ul",
+}
+
+// isList
+func (convData *convertedData) isList() bool {
+	var line = convData.markdownLines[0]
+	for md := range listStyle {
+		if strings.Index(strings.Trim(line, " "), md) == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // listConv ...list generation

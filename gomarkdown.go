@@ -104,10 +104,10 @@ func (convData *convertedData) getLineType() linetype {
 		return typeCode
 	case convData.isHeader():
 		return typeHeader
-	case convData.isQuote():
-		return typeQuote
 	case convData.isList():
 		return typeList
+	case convData.isQuote():
+		return typeQuote
 	case convData.isHorizon():
 		return typeHorizon
 	case convData.isTableBody():

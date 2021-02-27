@@ -8,7 +8,7 @@ import (
 // isTableHead ...count "|"
 func (convData *convertedData) isTableHead() bool {
 	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1
+	return len(line) >= 2 && strings.Trim(line, " ")[:1] == "|" && strings.Count(line, "|") > 1
 }
 
 // tableHeadConv ...make align
@@ -46,7 +46,7 @@ func (convData *convertedData) tableHeadClose() {
 
 // isTableBody ...thead and before type check
 func (convData *convertedData) isTableBody() bool {
-	return convData.isTableHead() && (convData.lineType == typeTableHead || convData.lineType == typeTableBody)
+	return (convData.lineType == typeTableBody || convData.lineType == typeTableHead) && convData.isTableHead()
 }
 
 // tableBodyConv ...table generation
