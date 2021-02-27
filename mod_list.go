@@ -23,8 +23,8 @@ func (convData *convertedData) isList() bool {
 	return false
 }
 
-// listConv ...list generation
-func (convData *convertedData) listConv() {
+// convList ...list generation
+func (convData *convertedData) convList() {
 	var text []string
 	var line = convData.markdownLines[0]
 	var nest = 0
@@ -58,8 +58,8 @@ func (convData *convertedData) listConv() {
 	convData.inlineConv()
 }
 
-// listClose ...close list
-func (convData *convertedData) listClose() {
+// closeList ...close list
+func (convData *convertedData) closeList() {
 	convData.shiftLine()
 	convData.listTagClose(0, len(convData.listNest))
 }

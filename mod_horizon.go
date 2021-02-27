@@ -10,7 +10,7 @@ func (convData *convertedData) isHorizon() bool {
 	return len(line) >= 3 && (line[:3] == "---" || line[:3] == "___" || line[:3] == "***")
 }
 
-// horizonConv
-func (convData *convertedData) horizonConv() {
+// convHorizon
+func (convData *convertedData) convHorizon() {
 	convData.markdownLines[0] = "<hr>"
 }

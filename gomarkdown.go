@@ -45,28 +45,28 @@ type convertedData struct {
 func MarkdownToHTML(markdown string) string {
 	// init
 	var convData convertedData
-	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n", "\n", "\n").Replace(markdown), "\n"), "")
+	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(markdown), "\n"), "")
 
 	// closeBlockFunc
 	var closeBlockFunc = map[linetype]func(){
-		typeTableBody: convData.tableBodyClose,
-		typeTableHead: convData.tableHeadClose,
-		typeCode:      convData.codeClose,
-		typeList:      convData.listClose,
-		typeParagraph: convData.paragraphClose,
-		typeQuote:     convData.quoteClose,
+		typeTableBody: convData.closeTableBody,
+		typeTableHead: convData.closeTableHead,
+		typeCode:      convData.closeCode,
+		typeList:      convData.closeList,
+		typeParagraph: convData.closeParagraph,
+		typeQuote:     convData.closeQuote,
 	}
 
 	// convBlockFunc
 	var convBlockFunc = map[linetype]func(){
-		typeTableBody:  convData.tableBodyConv,
-		typeTableHead:  convData.tableHeadConv,
-		typeCodeMarker: convData.codeMarkerConv,
-		typeList:       convData.listConv,
-		typeParagraph:  convData.paragraphConv,
-		typeQuote:      convData.quoteConv,
-		typeHeader:     convData.headerConv,
-		typeHorizon:    convData.horizonConv,
+		typeTableBody:  convData.convTableBody,
+		typeTableHead:  convData.convTableHead,
+		typeCodeMarker: convData.convCodeMarker,
+		typeList:       convData.convList,
+		typeParagraph:  convData.convParagraph,
+		typeQuote:      convData.convQuote,
+		typeHeader:     convData.convHeader,
+		typeHorizon:    convData.convHorizon,
 	}
 
 	// lines

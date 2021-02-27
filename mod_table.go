@@ -10,8 +10,8 @@ func (convData *convertedData) isTableHead() bool {
 	return len(line) >= 2 && strings.Trim(line, " ")[:1] == "|" && strings.Count(line, "|") > 1
 }
 
-// tableHeadConv ...make align
-func (convData *convertedData) tableHeadConv() {
+// convTableHead ...make align
+func (convData *convertedData) convTableHead() {
 	// error check
 	if len(convData.markdownLines) == 1 {
 		return
@@ -32,8 +32,8 @@ func (convData *convertedData) tableHeadConv() {
 	convData.markdownLines[0] = ("<table><thead>" + convData.markdownLines[0])
 }
 
-// tableHeadClose ...if table is close
-func (convData *convertedData) tableHeadClose() {
+// closeTableHead ...if table is close
+func (convData *convertedData) closeTableHead() {
 	if convData.lineType != typeTableBody {
 		convData.shiftLine()
 		convData.markdownLines[0] = "</thead></table>"
@@ -48,8 +48,8 @@ func (convData *convertedData) isTableBody() bool {
 	return (convData.lineType == typeTableBody || convData.lineType == typeTableHead) && convData.isTableHead()
 }
 
-// tableBodyConv ...table generation
-func (convData *convertedData) tableBodyConv() {
+// convTableBody ...table generation
+func (convData *convertedData) convTableBody() {
 	// <tr>
 	convData.tableGenerate("td")
 
@@ -62,8 +62,8 @@ func (convData *convertedData) tableBodyConv() {
 	convData.inlineConv()
 }
 
-// tableBodyClose ...
-func (convData *convertedData) tableBodyClose() {
+// closeTableBody ...
+func (convData *convertedData) closeTableBody() {
 	convData.shiftLine()
 	convData.markdownLines[0] = "</tbody></table>"
 	convData.tableAlign = nil

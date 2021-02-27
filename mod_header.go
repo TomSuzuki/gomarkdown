@@ -11,8 +11,8 @@ func (convData *convertedData) isHeader() bool {
 	return line != "" && strings.Trim(line, "#") == ""
 }
 
-// headerConv ...
-func (convData *convertedData) headerConv() {
+// convHeader ...
+func (convData *convertedData) convHeader() {
 	// <h1> - <h6>
 	var text []string
 	convData.markdownLines[0] = strings.Trim(convData.markdownLines[0], " ")

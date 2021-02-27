@@ -10,13 +10,13 @@ func (convData *convertedData) isCodeMarker() bool {
 	return (convData.markdownLines[0] + "   ")[:3] == "```"
 }
 
-// codeMarkerConv ...start code lines
-func (convData *convertedData) codeMarkerConv() {
+// convCodeMarker ...start code lines
+func (convData *convertedData) convCodeMarker() {
 	convData.markdownLines[0] = "<pre><code>"
 }
 
-// codeClose ...close code lines
-func (convData *convertedData) codeClose() {
+// closeCode ...close code lines
+func (convData *convertedData) closeCode() {
 	if convData.lineType == typeCodeMarker {
 		convData.markdownLines[0] = "</code></pre>"
 		convData.lineType = typeNone

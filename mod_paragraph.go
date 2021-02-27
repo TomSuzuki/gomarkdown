@@ -9,8 +9,8 @@ func (convData *convertedData) isNone() bool {
 	return strings.Trim(convData.markdownLines[0], " ") == ""
 }
 
-// paragraphConv ...
-func (convData *convertedData) paragraphConv() {
+// convParagraph ...
+func (convData *convertedData) convParagraph() {
 	// inline
 	convData.inlineConv()
 
@@ -20,8 +20,8 @@ func (convData *convertedData) paragraphConv() {
 	}
 }
 
-// paragraphClose ...
-func (convData *convertedData) paragraphClose() {
+// closeParagraph ...
+func (convData *convertedData) closeParagraph() {
 	convData.shiftLine()
 	convData.markdownLines[0] = "</p>"
 }

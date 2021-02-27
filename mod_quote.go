@@ -9,8 +9,8 @@ func (convData *convertedData) isQuote() bool {
 	return (strings.Trim(convData.markdownLines[0], " ") + "  ")[:2] == "> " || (convData.lineType == typeQuote && !convData.isNone())
 }
 
-// quoteConv
-func (convData *convertedData) quoteConv() {
+// convQuote
+func (convData *convertedData) convQuote() {
 	// >
 	nest := strings.Count(convData.markdownLines[0], "> ")
 	if nest == 0 {
@@ -43,8 +43,8 @@ func (convData *convertedData) quoteConv() {
 	convData.inlineConv()
 }
 
-// quoteClose
-func (convData *convertedData) quoteClose() {
+// closeQuote
+func (convData *convertedData) closeQuote() {
 	convData.shiftLine()
 	convData.quoteTagClose(0)
 }
