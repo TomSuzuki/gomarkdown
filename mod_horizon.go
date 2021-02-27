@@ -7,7 +7,7 @@ import (
 // isHorizon
 func (convData *convertedData) isHorizon() bool {
 	var line = strings.Replace(convData.markdownLines[0], " ", "", -1)
-	return len(line) >= 3 && (line[:3] == "---" || line[:3] == "___" || line[:3] == "***")
+	return len(line) >= 3 && (len(line) == strings.Count(line, "-") || len(line) == strings.Count(line, "_") || len(line) == strings.Count(line, "*"))
 }
 
 // convHorizon

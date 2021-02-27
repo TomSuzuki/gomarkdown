@@ -7,7 +7,7 @@ func (convData *convertedData) isCode() bool {
 
 // isCodeMarker ...
 func (convData *convertedData) isCodeMarker() bool {
-	return (convData.markdownLines[0] + "   ")[:3] == "```"
+	return len(convData.markdownLines[0]) >= 3 && (convData.markdownLines[0])[:3] == "```"
 }
 
 // convCodeMarker ...start code lines
