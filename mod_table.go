@@ -1,7 +1,6 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -30,7 +29,7 @@ func (convData *convertedData) tableHeadConv() {
 	convData.tableGenerate("th")
 
 	// open <table><thead>
-	convData.markdownLines[0] = fmt.Sprintf("<table><thead>%s", convData.markdownLines[0])
+	convData.markdownLines[0] = ("<table><thead>" + convData.markdownLines[0])
 }
 
 // tableHeadClose ...if table is close
@@ -56,7 +55,7 @@ func (convData *convertedData) tableBodyConv() {
 
 	// <tbody>
 	if convData.typeChenged {
-		convData.markdownLines[0] = fmt.Sprintf("</thead><tbody>%s", convData.markdownLines[0])
+		convData.markdownLines[0] = ("</thead><tbody>" + convData.markdownLines[0])
 	}
 
 	// inline

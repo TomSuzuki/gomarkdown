@@ -1,7 +1,6 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -17,7 +16,7 @@ func (convData *convertedData) paragraphConv() {
 
 	// open <p>
 	if convData.typeChenged {
-		convData.markdownLines[0] = fmt.Sprintf("<p>%s", convData.markdownLines[0])
+		convData.markdownLines[0] = ("<p>" + convData.markdownLines[0])
 	}
 }
 

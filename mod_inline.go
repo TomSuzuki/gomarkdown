@@ -1,7 +1,6 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -75,20 +74,32 @@ func indexList(s, substr string) []int {
 func (convData *convertedData) inlineTag(md string, html string) {
 	var codeList = strings.Split(convData.markdownLines[0], md)
 	var isEven = len(codeList)%2 == 0
+	var text []string
 	convData.markdownLines[0] = ""
 
 	// insert tags
 	for i, v := range codeList {
 		if isEven && i == len(codeList)-1 {
-			convData.markdownLines[0] += (md + v)
+			text = append(text, md)
+			text = append(text, v)
 		} else if i%2 == 0 {
-			convData.markdownLines[0] += v
+			text = append(text, v)
 		} else if isNotBrokenHTML(v) {
-			convData.markdownLines[0] += fmt.Sprintf("<%s>%s</%s>", html, v, html)
+			text = append(text, "<")
+			text = append(text, html)
+			text = append(text, ">")
+			text = append(text, v)
+			text = append(text, "</")
+			text = append(text, html)
+			text = append(text, ">")
 		} else {
-			convData.markdownLines[0] += (md + v)
+			text = append(text, md)
+			text = append(text, v)
 		}
 	}
+
+	// join
+	convData.markdownLines[0] = strings.Join(text, "")
 }
 
 // isNotBrokenHTML ..."<s></s><em></em>" <<< true, "<s><em></em>" <<< false, "<img ...>" <<< false...?
