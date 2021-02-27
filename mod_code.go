@@ -12,9 +12,7 @@ func (convData *convertedData) isCodeMarker() bool {
 
 // codeMarkerConv ...start code lines
 func (convData *convertedData) codeMarkerConv() {
-	if convData.typeChenged {
-		convData.markdownLines[0] = "<pre><code>"
-	}
+	convData.markdownLines[0] = "<pre><code>"
 }
 
 // codeClose ...close code lines
