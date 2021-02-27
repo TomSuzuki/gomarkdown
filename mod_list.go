@@ -14,9 +14,9 @@ var listStyle = map[string]string{
 
 // isList
 func (convData *convertedData) isList() bool {
-	var line = convData.markdownLines[0]
+	var line = strings.Trim(convData.markdownLines[0], " ")
 	for md := range listStyle {
-		if strings.Index(strings.Trim(line, " "), md) == 0 {
+		if strings.Index(line, md) == 0 {
 			return true
 		}
 	}
