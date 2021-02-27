@@ -48,7 +48,7 @@ func Test(t *testing.T) {
 }
 
 // speed test
-func BenchmarkSpeedTest(b *testing.B) {
+func BenchmarkSpeed_gomarkdown(b *testing.B) {
 	file := "./testcase/00.md"
 	md, _ := ioutil.ReadFile(file)
 
