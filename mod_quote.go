@@ -1,7 +1,6 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -22,17 +21,19 @@ func (convData *convertedData) quoteConv() {
 
 	// open
 	if convData.nestQuote < nest {
+		var text []string
 		var oldNest = convData.nestQuote
-		var tags = ""
 		for convData.nestQuote < nest {
 			convData.nestQuote++
-			tags = fmt.Sprintf("%s<blockquote>", tags)
 			if oldNest != 0 {
-				tags = fmt.Sprintf("</p>%s", tags)
+				text = append(text, "</p>")
 			}
-		}
+			text = append(text, "<blockquote>")
 
-		convData.markdownLines[0] = fmt.Sprintf("%s<p>%s", tags, convData.markdownLines[0])
+		}
+		text = append(text, "<p>")
+		text = append(text, convData.markdownLines[0])
+		convData.markdownLines[0] = strings.Join(text, "")
 	}
 
 	// close
@@ -51,10 +52,13 @@ func (convData *convertedData) quoteClose() {
 // quoteTagClose
 func (convData *convertedData) quoteTagClose(nest int) {
 	if convData.nestQuote > nest {
+		var text []string
+		text = append(text, "</p>")
+		text = append(text, convData.markdownLines[0])
 		for convData.nestQuote > nest {
-			convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
+			text = append(text, "</blockquote>")
 			convData.nestQuote--
 		}
-		convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
+		convData.markdownLines[0] = strings.Join(text, "")
 	}
 }
