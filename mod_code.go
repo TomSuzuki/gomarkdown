@@ -12,7 +12,21 @@ func (convData *convertedData) isCodeMarker() bool {
 
 // convCodeMarker ...start code lines
 func (convData *convertedData) convCodeMarker() {
-	convData.markdownLines[0] = "<pre><code>"
+	var text = ""
+
+	if len(convData.markdownLines) >= 2 {
+		convData.markdownLines = convData.markdownLines[1:]
+		if !convData.isCodeMarker() {
+			text = convData.markdownLines[0]
+		} else {
+			convData.markdownLines = append(convData.markdownLines[:1], convData.markdownLines...)
+			convData.markdownLines[1] = "```"
+		}
+	}
+
+	convData.markdownLines[0] = "<pre><code>" + text
+
+	convData.lineType = typeCode
 }
 
 // closeCode ...close code lines
