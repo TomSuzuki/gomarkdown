@@ -33,7 +33,7 @@ const (
 // all data
 type convertedData struct {
 	markdownLines []string
-	html          string
+	html          []string
 	lineType      linetype
 	tableAlign    []string
 	listNest      []string
@@ -45,29 +45,7 @@ type convertedData struct {
 func MarkdownToHTML(markdown string) string {
 	// init
 	var convData convertedData
-	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n", "\n", "\n").Replace(markdown), "\n"), "")
-
-	// closeBlockFunc
-	var closeBlockFunc = map[linetype]func(){
-		typeTableBody: convData.tableBodyClose,
-		typeTableHead: convData.tableHeadClose,
-		typeCode:      convData.codeClose,
-		typeList:      convData.listClose,
-		typeParagraph: convData.paragraphClose,
-		typeQuote:     convData.quoteClose,
-	}
-
-	// convBlockFunc
-	var convBlockFunc = map[linetype]func(){
-		typeTableBody:  convData.tableBodyConv,
-		typeTableHead:  convData.tableHeadConv,
-		typeCodeMarker: convData.codeMarkerConv,
-		typeList:       convData.listConv,
-		typeParagraph:  convData.paragraphConv,
-		typeQuote:      convData.quoteConv,
-		typeHeader:     convData.headerConv,
-		typeHorizon:    convData.horizonConv,
-	}
+	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(markdown), "\n"), "")
 
 	// lines
 	for len(convData.markdownLines) > 0 {
@@ -77,21 +55,49 @@ func MarkdownToHTML(markdown string) string {
 		convData.typeChenged = convData.lineType != oldType
 
 		// close tag
-		if f := closeBlockFunc[oldType]; convData.typeChenged && f != nil {
-			f()
+		if convData.typeChenged {
+			switch oldType {
+			case typeTableBody:
+				convData.closeTableBody()
+			case typeTableHead:
+				convData.closeTableHead()
+			case typeCode:
+				convData.closeCode()
+			case typeList:
+				convData.closeList()
+			case typeParagraph:
+				convData.closeParagraph()
+			case typeQuote:
+				convData.closeQuote()
+			}
 		}
 
 		// markdown -> html
-		if f := convBlockFunc[convData.lineType]; f != nil {
-			f()
+		switch convData.lineType {
+		case typeTableBody:
+			convData.convTableBody()
+		case typeTableHead:
+			convData.convTableHead()
+		case typeCodeMarker:
+			convData.convCodeMarker()
+		case typeList:
+			convData.convList()
+		case typeParagraph:
+			convData.convParagraph()
+		case typeQuote:
+			convData.convQuote()
+		case typeHeader:
+			convData.convHeader()
+		case typeHorizon:
+			convData.convHorizon()
 		}
 
 		// add html
-		convData.html += convData.markdownLines[0]
+		convData.html = append(convData.html, convData.markdownLines[0])
 		convData.markdownLines = convData.markdownLines[1:]
 	}
 
-	return convData.html
+	return strings.Join(convData.html, "\n")
 }
 
 // getLineType ...determine the type of line
@@ -104,10 +110,10 @@ func (convData *convertedData) getLineType() linetype {
 		return typeCode
 	case convData.isHeader():
 		return typeHeader
-	case convData.isQuote():
-		return typeQuote
 	case convData.isList():
 		return typeList
+	case convData.isQuote():
+		return typeQuote
 	case convData.isHorizon():
 		return typeHorizon
 	case convData.isTableBody():

@@ -1,15 +1,8 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
-
-// isList
-func (convData *convertedData) isList() bool {
-	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + "  ")[:2] == "- " || (strings.Trim(line, " ") + "   ")[:3] == "1. "
-}
 
 // listStyle
 var listStyle = map[string]string{
@@ -19,10 +12,21 @@ var listStyle = map[string]string{
 	"+ ":  "ul",
 }
 
-// listConv ...list generation
-func (convData *convertedData) listConv() {
+// isList
+func (convData *convertedData) isList() bool {
+	var line = strings.Trim(convData.markdownLines[0], " ")
+	for md := range listStyle {
+		if strings.Index(line, md) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// convList ...list generation
+func (convData *convertedData) convList() {
+	var text []string
 	var line = convData.markdownLines[0]
-	var openTags = ""
 	var nest = 0
 	var oldNest = len(convData.listNest)
 
@@ -35,13 +39,17 @@ func (convData *convertedData) listConv() {
 			// open <ul> or <ol>
 			for nest > len(convData.listNest) {
 				convData.listNest = append(convData.listNest, tag)
-				openTags = fmt.Sprintf("<%s>", tag)
+				text = append(text, "<")
+				text = append(text, tag)
+				text = append(text, ">")
 			}
 		}
 	}
 
 	// open <li>
-	convData.markdownLines[0] = fmt.Sprintf("%s<li>%s", openTags, line)
+	text = append(text, "<li>")
+	text = append(text, line)
+	convData.markdownLines[0] = strings.Join(text, "")
 
 	// close
 	convData.listTagClose(nest, oldNest)
@@ -50,32 +58,37 @@ func (convData *convertedData) listConv() {
 	convData.inlineConv()
 }
 
-// listClose ...close list
-func (convData *convertedData) listClose() {
+// closeList ...close list
+func (convData *convertedData) closeList() {
 	convData.shiftLine()
 	convData.listTagClose(0, len(convData.listNest))
 }
 
 // listTagClose
 func (convData *convertedData) listTagClose(nest int, oldNest int) {
-	var tags = ""
-	var tagl = "" // Add </li> that could not be added to the list when the nesting is finished.
+	var text = []string{""}
 
 	// close
 	for nest < len(convData.listNest) {
-		tags = fmt.Sprintf("%s</li></%s>", tags, convData.listNest[len(convData.listNest)-1])
+		text = append(text, "</li></")
+		text = append(text, convData.listNest[len(convData.listNest)-1])
+		text = append(text, ">")
 		convData.listNest = convData.listNest[:len(convData.listNest)-1]
 	}
 
 	// </li>
 	if nest <= oldNest && nest != 0 {
-		tagl = "</li>"
+		if oldNest > nest {
+			text = append(text, "</li>")
+		} else {
+			text = append(text[:1], text...)
+			text[0] = "</li>"
+		}
 	}
 
 	// append
-	if oldNest > nest {
-		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tags, tagl, convData.markdownLines[0])
-	} else {
-		convData.markdownLines[0] = fmt.Sprintf("%s%s%s", tagl, convData.markdownLines[0], tags)
-	}
+	text = append(text, convData.markdownLines[0])
+
+	// join
+	convData.markdownLines[0] = strings.Join(text, "")
 }

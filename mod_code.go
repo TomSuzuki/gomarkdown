@@ -7,18 +7,16 @@ func (convData *convertedData) isCode() bool {
 
 // isCodeMarker ...
 func (convData *convertedData) isCodeMarker() bool {
-	return (convData.markdownLines[0] + "   ")[:3] == "```"
+	return len(convData.markdownLines[0]) >= 3 && (convData.markdownLines[0])[:3] == "```"
 }
 
-// codeMarkerConv ...start code lines
-func (convData *convertedData) codeMarkerConv() {
-	if convData.typeChenged {
-		convData.markdownLines[0] = "<pre><code>"
-	}
+// convCodeMarker ...start code lines
+func (convData *convertedData) convCodeMarker() {
+	convData.markdownLines[0] = "<pre><code>"
 }
 
-// codeClose ...close code lines
-func (convData *convertedData) codeClose() {
+// closeCode ...close code lines
+func (convData *convertedData) closeCode() {
 	if convData.lineType == typeCodeMarker {
 		convData.markdownLines[0] = "</code></pre>"
 		convData.lineType = typeNone

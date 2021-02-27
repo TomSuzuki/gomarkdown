@@ -1,18 +1,16 @@
 package gomarkdown
 
 import (
-	"fmt"
 	"strings"
 )
 
 // isQuote
 func (convData *convertedData) isQuote() bool {
-	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + " ")[:1] == ">" || (convData.lineType == typeQuote && strings.Trim(line, " ") != "")
+	return (strings.Trim(convData.markdownLines[0], " ") + "  ")[:2] == "> " || (convData.lineType == typeQuote && !convData.isNone())
 }
 
-// quoteConv
-func (convData *convertedData) quoteConv() {
+// convQuote
+func (convData *convertedData) convQuote() {
 	// >
 	nest := strings.Count(convData.markdownLines[0], "> ")
 	if nest == 0 {
@@ -23,17 +21,19 @@ func (convData *convertedData) quoteConv() {
 
 	// open
 	if convData.nestQuote < nest {
+		var text []string
 		var oldNest = convData.nestQuote
-		var tags = ""
 		for convData.nestQuote < nest {
 			convData.nestQuote++
-			tags = fmt.Sprintf("%s<blockquote>", tags)
 			if oldNest != 0 {
-				tags = fmt.Sprintf("</p>%s", tags)
+				text = append(text, "</p>")
 			}
-		}
+			text = append(text, "<blockquote>")
 
-		convData.markdownLines[0] = fmt.Sprintf("%s<p>%s", tags, convData.markdownLines[0])
+		}
+		text = append(text, "<p>")
+		text = append(text, convData.markdownLines[0])
+		convData.markdownLines[0] = strings.Join(text, "")
 	}
 
 	// close
@@ -43,8 +43,8 @@ func (convData *convertedData) quoteConv() {
 	convData.inlineConv()
 }
 
-// quoteClose
-func (convData *convertedData) quoteClose() {
+// closeQuote
+func (convData *convertedData) closeQuote() {
 	convData.shiftLine()
 	convData.quoteTagClose(0)
 }
@@ -52,10 +52,13 @@ func (convData *convertedData) quoteClose() {
 // quoteTagClose
 func (convData *convertedData) quoteTagClose(nest int) {
 	if convData.nestQuote > nest {
+		var text []string
+		text = append(text, "</p>")
+		text = append(text, convData.markdownLines[0])
 		for convData.nestQuote > nest {
-			convData.markdownLines[0] = fmt.Sprintf("%s</blockquote>", convData.markdownLines[0])
+			text = append(text, "</blockquote>")
 			convData.nestQuote--
 		}
-		convData.markdownLines[0] = fmt.Sprintf("</p>%s", convData.markdownLines[0])
+		convData.markdownLines[0] = strings.Join(text, "")
 	}
 }

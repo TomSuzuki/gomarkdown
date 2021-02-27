@@ -20,3 +20,7 @@ or
 ```
 gotest -v
 ```
+or
+```
+gotest -run NONE -bench .
+```
