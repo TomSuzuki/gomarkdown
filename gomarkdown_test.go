@@ -45,19 +45,17 @@ func Test(t *testing.T) {
 	for i := range testfile {
 		test(testfile[i], t)
 	}
-
-	// speed test
-	for ct := 0; ct < 1000*5; ct++ {
-		for i := range testfile {
-			testSpeed(testfile[i], t)
-		}
-	}
 }
 
-func testSpeed(test testFile, t *testing.T) {
-	b, _ := ioutil.ReadFile(test.markdown)
-	md := string(b)
-	md = gomarkdown.MarkdownToHTML(md)
+// speed test
+func BenchmarkSpeedTest(b *testing.B) {
+	file := "./testcase/00.md"
+	md, _ := ioutil.ReadFile(file)
+
+	b.ResetTimer()
+	for ct := 0; ct < 1500; ct++ {
+		gomarkdown.MarkdownToHTML(string(md))
+	}
 }
 
 func test(test testFile, t *testing.T) {
