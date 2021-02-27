@@ -47,28 +47,6 @@ func MarkdownToHTML(markdown string) string {
 	var convData convertedData
 	convData.markdownLines = append(strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(markdown), "\n"), "")
 
-	// closeBlockFunc
-	var closeBlockFunc = map[linetype]func(){
-		typeTableBody: convData.closeTableBody,
-		typeTableHead: convData.closeTableHead,
-		typeCode:      convData.closeCode,
-		typeList:      convData.closeList,
-		typeParagraph: convData.closeParagraph,
-		typeQuote:     convData.closeQuote,
-	}
-
-	// convBlockFunc
-	var convBlockFunc = map[linetype]func(){
-		typeTableBody:  convData.convTableBody,
-		typeTableHead:  convData.convTableHead,
-		typeCodeMarker: convData.convCodeMarker,
-		typeList:       convData.convList,
-		typeParagraph:  convData.convParagraph,
-		typeQuote:      convData.convQuote,
-		typeHeader:     convData.convHeader,
-		typeHorizon:    convData.convHorizon,
-	}
-
 	// lines
 	for len(convData.markdownLines) > 0 {
 		// if type changed
@@ -77,13 +55,41 @@ func MarkdownToHTML(markdown string) string {
 		convData.typeChenged = convData.lineType != oldType
 
 		// close tag
-		if f := closeBlockFunc[oldType]; convData.typeChenged && f != nil {
-			f()
+		if convData.typeChenged {
+			switch oldType {
+			case typeTableBody:
+				convData.closeTableBody()
+			case typeTableHead:
+				convData.closeTableHead()
+			case typeCode:
+				convData.closeCode()
+			case typeList:
+				convData.closeList()
+			case typeParagraph:
+				convData.closeParagraph()
+			case typeQuote:
+				convData.closeQuote()
+			}
 		}
 
 		// markdown -> html
-		if f := convBlockFunc[convData.lineType]; f != nil {
-			f()
+		switch convData.lineType {
+		case typeTableBody:
+			convData.convTableBody()
+		case typeTableHead:
+			convData.convTableHead()
+		case typeCodeMarker:
+			convData.convCodeMarker()
+		case typeList:
+			convData.convList()
+		case typeParagraph:
+			convData.convParagraph()
+		case typeQuote:
+			convData.convQuote()
+		case typeHeader:
+			convData.convHeader()
+		case typeHorizon:
+			convData.convHorizon()
 		}
 
 		// add html
