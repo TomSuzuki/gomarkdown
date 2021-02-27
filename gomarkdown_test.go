@@ -47,7 +47,7 @@ func Test(t *testing.T) {
 	}
 
 	// speed test
-	for ct := 0; ct < 1000; ct++ {
+	for ct := 0; ct < 1000*5; ct++ {
 		for i := range testfile {
 			testSpeed(testfile[i], t)
 		}
