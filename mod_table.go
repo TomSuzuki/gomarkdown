@@ -1,20 +1,17 @@
 package gomarkdown
 
 import (
-	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
 // isTableHead ...count "|"
 func (convData *convertedData) isTableHead() bool {
 	var line = convData.markdownLines[0]
-	return (strings.Trim(line, " ") + " ")[:1] == "|" && strings.Count(line, "|") > 1
+	return len(line) >= 2 && strings.Trim(line, " ")[:1] == "|" && strings.Count(line, "|") > 1
 }
 
-// tableHeadConv ...make align
-func (convData *convertedData) tableHeadConv() {
+// convTableHead ...make align
+func (convData *convertedData) convTableHead() {
 	// error check
 	if len(convData.markdownLines) == 1 {
 		return
@@ -32,11 +29,11 @@ func (convData *convertedData) tableHeadConv() {
 	convData.tableGenerate("th")
 
 	// open <table><thead>
-	convData.markdownLines[0] = fmt.Sprintf("<table><thead>%s", convData.markdownLines[0])
+	convData.markdownLines[0] = ("<table><thead>" + convData.markdownLines[0])
 }
 
-// tableHeadClose ...if table is close
-func (convData *convertedData) tableHeadClose() {
+// closeTableHead ...if table is close
+func (convData *convertedData) closeTableHead() {
 	if convData.lineType != typeTableBody {
 		convData.shiftLine()
 		convData.markdownLines[0] = "</thead></table>"
@@ -48,25 +45,25 @@ func (convData *convertedData) tableHeadClose() {
 
 // isTableBody ...thead and before type check
 func (convData *convertedData) isTableBody() bool {
-	return convData.isTableHead() && (convData.lineType == typeTableHead || convData.lineType == typeTableBody)
+	return (convData.lineType == typeTableBody || convData.lineType == typeTableHead) && convData.isTableHead()
 }
 
-// tableBodyConv ...table generation
-func (convData *convertedData) tableBodyConv() {
+// convTableBody ...table generation
+func (convData *convertedData) convTableBody() {
 	// <tr>
 	convData.tableGenerate("td")
 
 	// <tbody>
 	if convData.typeChenged {
-		convData.markdownLines[0] = fmt.Sprintf("</thead><tbody>%s", convData.markdownLines[0])
+		convData.markdownLines[0] = ("</thead><tbody>" + convData.markdownLines[0])
 	}
 
 	// inline
 	convData.inlineConv()
 }
 
-// tableBodyClose ...
-func (convData *convertedData) tableBodyClose() {
+// closeTableBody ...
+func (convData *convertedData) closeTableBody() {
 	convData.shiftLine()
 	convData.markdownLines[0] = "</tbody></table>"
 	convData.tableAlign = nil
@@ -74,13 +71,28 @@ func (convData *convertedData) tableBodyClose() {
 
 // tableGenerate ...<tr>
 func (convData *convertedData) tableGenerate(tagType string) {
-	// <tr>
-	var reg = `\|` + strings.Repeat(`([^|]*)\|`, len(convData.tableAlign)) + `$`
-	var htm string
-	for i := range convData.tableAlign {
-		htm += fmt.Sprintf("<%s align='%s'>$%s</%s>", tagType, convData.tableAlign[i], strconv.Itoa(i+1), tagType)
+	// check
+	var tr = strings.Split(convData.markdownLines[0], "|")
+	if len(tr)-2 != len(convData.tableAlign) {
+		return
 	}
-	convData.markdownLines[0] = fmt.Sprintf("<tr>%s</tr>", regexp.MustCompile(reg).ReplaceAllString(convData.markdownLines[0], htm))
+
+	// make
+	var html []string
+	html = append(html, "<tr>")
+	for i, v := range convData.tableAlign {
+		html = append(html, "<")
+		html = append(html, tagType)
+		html = append(html, " align='")
+		html = append(html, v)
+		html = append(html, "'>")
+		html = append(html, tr[i+1])
+		html = append(html, "</")
+		html = append(html, tagType)
+		html = append(html, ">")
+	}
+	html = append(html, "</tr>")
+	convData.markdownLines[0] = strings.Join(html, "")
 }
 
 // tableAlign ... : --- :

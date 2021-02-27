@@ -1,18 +1,16 @@
 package gomarkdown
 
-import "regexp"
-
-const horizonMD = `^(\* ){3,}$|^\*.$|^(- ){3,}|^-{3,}$|^(_ ){3,}$|^_{3,}$`
-const horizonHTML = "<hr>"
+import (
+	"strings"
+)
 
 // isHorizon
 func (convData *convertedData) isHorizon() bool {
-	var line = convData.markdownLines[0]
-	return line != regexp.MustCompile(horizonMD).ReplaceAllString(line, horizonHTML)
+	var line = strings.Replace(convData.markdownLines[0], " ", "", -1)
+	return len(line) >= 3 && (len(line) == strings.Count(line, "-") || len(line) == strings.Count(line, "_") || len(line) == strings.Count(line, "*"))
 }
 
-// horizonConv
-func (convData *convertedData) horizonConv() {
-	var line = convData.markdownLines[0]
-	convData.markdownLines[0] = regexp.MustCompile(horizonMD).ReplaceAllString(line, horizonHTML)
+// convHorizon
+func (convData *convertedData) convHorizon() {
+	convData.markdownLines[0] = "<hr>"
 }

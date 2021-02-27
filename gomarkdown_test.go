@@ -47,6 +47,17 @@ func Test(t *testing.T) {
 	}
 }
 
+// speed test
+func BenchmarkSpeed_gomarkdown(b *testing.B) {
+	file := "./testcase/00.md"
+	md, _ := ioutil.ReadFile(file)
+
+	b.ResetTimer()
+	for ct := 0; ct < 1500; ct++ {
+		gomarkdown.MarkdownToHTML(string(md))
+	}
+}
+
 func test(test testFile, t *testing.T) {
 	// load
 	b, _ := ioutil.ReadFile(test.html)

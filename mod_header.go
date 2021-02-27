@@ -1,7 +1,7 @@
 package gomarkdown
 
 import (
-	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -11,20 +11,20 @@ func (convData *convertedData) isHeader() bool {
 	return line != "" && strings.Trim(line, "#") == ""
 }
 
-// headerConv ...
-func (convData *convertedData) headerConv() {
+// convHeader ...
+func (convData *convertedData) convHeader() {
 	// <h1> - <h6>
+	var text []string
 	convData.markdownLines[0] = strings.Trim(convData.markdownLines[0], " ")
-	for md, html := range map[string]string{
-		`^#\s([^#]*?$)`:      "<h1>$1</h1>",
-		`^##\s([^#]*?$)`:     "<h2>$1</h2>",
-		`^###\s([^#]*?$)`:    "<h3>$1</h3>",
-		`^####\s([^#]*?$)`:   "<h4>$1</h4>",
-		`^#####\s([^#]*?$)`:  "<h5>$1</h5>",
-		`^######\s([^#]*?$)`: "<h6>$1</h6>",
-	} {
-		convData.markdownLines[0] = regexp.MustCompile(md).ReplaceAllString(convData.markdownLines[0], html)
-	}
+	h := strings.Count(strings.Split(convData.markdownLines[0], " ")[0], "#")
+	text = append(text, "<h")
+	text = append(text, strconv.Itoa(h))
+	text = append(text, ">")
+	text = append(text, convData.markdownLines[0][h+1:])
+	text = append(text, "</h")
+	text = append(text, strconv.Itoa(h))
+	text = append(text, ">")
+	convData.markdownLines[0] = strings.Join(text, "")
 
 	// inline
 	convData.inlineConv()
