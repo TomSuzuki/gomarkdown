@@ -2,7 +2,6 @@ package gomarkdown
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -10,26 +9,73 @@ import (
 func (convData *convertedData) inlineConv() {
 
 	// inline text
-	convData.inlineTage("**", "strong")
-	convData.inlineTage("`", "code")
-	convData.inlineTage("~", "s")
-	convData.inlineTage("__", "em")
-	convData.inlineTage("_", "em")
-	convData.inlineTage("*", "em")
+	convData.inlineTag("**", "strong")
+	convData.inlineTag("`", "code")
+	convData.inlineTag("~", "s")
+	convData.inlineTag("__", "em")
+	convData.inlineTag("_", "em")
+	convData.inlineTag("*", "em")
 
 	// <img> and <a>
-	convData.markdownLines[0] = regexp.MustCompile(`!\[(.*?)\]\((.*?)\)`).ReplaceAllString(convData.markdownLines[0], "<img alt='$1' src='$2'>")
-	convData.markdownLines[0] = regexp.MustCompile(`\[(.*)\]\((.*)\)`).ReplaceAllString(convData.markdownLines[0], "<a href='$2'>$1</a>")
+	convData.inlineLink("![", "](", ")", "<img alt='$1' src='$2'>")
+	convData.inlineLink("[", "](", ")", "<a href='$2'>$1</a>")
 
 	// <br>
 	convData.markdownLines[0] = strings.Replace(convData.markdownLines[0], "  ", "<br>", -1)
 }
 
-// inlineTage ...md -> html
-func (convData *convertedData) inlineTage(md string, html string) {
+// inlineLink ...![]() and []()
+func (convData *convertedData) inlineLink(start, middle, end string, format string) {
+	var line = convData.markdownLines[0]
+	var p = 0
+
+	for true {
+		// index
+		var iMiddle = p + strings.Index(line[p:], middle)
+		if iMiddle == -1 {
+			break
+		}
+		var iStart = strings.LastIndex(line[:iMiddle], start)
+		var iEnd = iMiddle + strings.Index(line[iMiddle:], end)
+
+		// replace
+		if iMiddle != -1 && iStart != -1 && iEnd != -1 {
+			var s = strings.NewReplacer(
+				"$1", line[len(start)+iStart:iMiddle],
+				"$2", line[len(middle)+iMiddle:iEnd],
+			).Replace(format)
+			line = line[:iStart] + s + line[len(end)+iEnd:]
+		}
+
+		// error check
+		p = iMiddle + len(middle)
+		if p > len(line) {
+			break
+		}
+	}
+
+	convData.markdownLines[0] = line
+}
+
+// indexList
+func indexList(s, substr string) []int {
+	var n []int
+	for true {
+		var m = strings.Index(s, substr)
+		if m == -1 {
+			break
+		}
+		n = append(n, m)
+		s = s[m:]
+	}
+	return n
+}
+
+// inlineTag ...md -> html
+func (convData *convertedData) inlineTag(md string, html string) {
 	var codeList = strings.Split(convData.markdownLines[0], md)
-	convData.markdownLines[0] = ""
 	var isEven = len(codeList)%2 == 0
+	convData.markdownLines[0] = ""
 
 	// insert tags
 	for i, v := range codeList {
