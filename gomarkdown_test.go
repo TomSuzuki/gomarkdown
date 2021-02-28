@@ -5,6 +5,9 @@
  * Copyright 2021 TomSuzuki
  * LICENSE: MIT
  *
+ * # How to use
+ * > gotest -run NONE -bench .
+ * > gotest -v
  */
 
 //package gomarkdown

@@ -73,7 +73,7 @@ func (convData *convertedData) closeTableBody() {
 func (convData *convertedData) tableGenerate(tagType string) {
 	// check
 	var tr = strings.Split(convData.markdownLines[0], "|")
-	if len(tr)-2 != len(convData.tableAlign) {
+	if len(tr)-2 <= 1 || len(tr)-2 != len(convData.tableAlign) || tr[0] != "" || tr[len(tr)-1] != "" {
 		return
 	}
 
