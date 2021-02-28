@@ -10,6 +10,7 @@ func (convData *convertedData) isHeader() bool {
 	return line != "" && strings.Trim(line, "#") == ""
 }
 
+// headText
 const headText = "123456"
 
 // convHeader ...
