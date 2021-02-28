@@ -12,11 +12,6 @@ func (convData *convertedData) isTableHead() bool {
 
 // convTableHead ...make align
 func (convData *convertedData) convTableHead() {
-	// error check
-	if len(convData.markdownLines) == 1 {
-		return
-	}
-
 	// align
 	alignLine := strings.Split(convData.markdownLines[1], "|")
 	convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
@@ -73,7 +68,7 @@ func (convData *convertedData) closeTableBody() {
 func (convData *convertedData) tableGenerate(tagType string) {
 	// check
 	var tr = strings.Split(convData.markdownLines[0], "|")
-	if len(tr)-2 != len(convData.tableAlign) {
+	if len(tr)-2 <= 1 || len(tr)-2 != len(convData.tableAlign) || tr[0] != "" || tr[len(tr)-1] != "" {
 		return
 	}
 
