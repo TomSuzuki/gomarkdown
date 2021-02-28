@@ -12,6 +12,11 @@ func (convData *convertedData) isTableHead() bool {
 
 // convTableHead ...make align
 func (convData *convertedData) convTableHead() {
+	// error check
+	if len(convData.markdownLines) == 1 {
+		return
+	}
+
 	// align
 	alignLine := strings.Split(convData.markdownLines[1], "|")
 	convData.markdownLines = append([]string{convData.markdownLines[0]}, convData.markdownLines[2:]...)
